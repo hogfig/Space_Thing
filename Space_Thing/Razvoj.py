@@ -9,6 +9,8 @@ orange = (255,162,0)
 black=(0,0,0)
 size=width,height= 920,640
 screen=pygame.display.set_mode(size)
+width = 920
+height = 640
 clock= pygame.time.Clock()
 fps= 60
 
@@ -55,6 +57,9 @@ class Letjelica():
         self.promjena_poz_x = promjena_poz_x
         self.promjena_poz_y = promjena_poz_y
         self.life = 1
+        self.width = 49
+        self.height = 55
+        
 
     def pew_pew(self):        
         Pew_Pew.append([self.position[0] + 28, self.position[1] - 5, 3, 3])
@@ -132,6 +137,8 @@ def main_menu():
                 menu_running = False
                 pygame.mixer.music.stop()
                 PlayerOneGameLoop()
+            if event.type == pygame.MOUSEBUTTONDOWN and x_icon.get_rect().collidepoint(pygame.mouse.get_pos()):
+                menu_running = False
 
         pygame.display.update()                     
         clock.tick(fps)
@@ -184,9 +191,13 @@ def PlayerOneGameLoop():
                     letjelica.promjena_poz_y = 0
                 if event.key == pygame.K_DOWN:
                     letjelica.promjena_poz_y = 0
-                    
-        letjelica.position[0] += letjelica.promjena_poz_x
-        letjelica.position[1] += letjelica.promjena_poz_y                  
+
+        if (letjelica.position[0] + letjelica.promjena_poz_x) < (width-letjelica.width) and (letjelica.position[0] + letjelica.promjena_poz_x) > -11:
+            letjelica.position[0] += letjelica.promjena_poz_x
+
+        if (letjelica.position[1] + letjelica.promjena_poz_y) < (height-letjelica.height+5) and (letjelica.position[1] + letjelica.promjena_poz_y) > 0:
+            letjelica.position[1] += letjelica.promjena_poz_y
+        
 
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya
