@@ -137,6 +137,10 @@ def main_menu():
                 menu_running = False
                 pygame.mixer.music.stop()
                 PlayerOneGameLoop()
+            if event.type == pygame.MOUSEBUTTONDOWN and Player2_text.rect.collidepoint(pygame.mouse.get_pos()):
+                menu_running = False
+                pygame.mixer.music.stop()
+                PlayerTwoGameLoop()
             if event.type == pygame.MOUSEBUTTONDOWN and x_icon.get_rect().collidepoint(pygame.mouse.get_pos()):
                 menu_running = False
 
@@ -218,6 +222,107 @@ def PlayerOneGameLoop():
         
     pygame.quit()
     quit()
+
+def PlayerTwoGameLoop():
+    game_running = True
+
+    #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x
+    letjelica1 = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0)
+    letjelica2 = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0)
+    
+    while game_running:
+        screen.fill(black)
+
+        #Blok za crtanje background zvezda
+        for i in Stars:
+            if i[1]< height:
+                i[1] += 2
+                pygame.draw.rect(screen,white,[i[0], i[1], 1, 1])
+            elif i[1] > height: 
+                i[1] = 1
+                
+ #       meteor_najmanji = pygame.image.load('Asteroidi/Asteroid1.png')
+ #       meteor_srednji = pygame.image.load('Asteroidi/medasteroid.png') 
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
+                game_running = False
+            if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
+                if event.key == pygame.K_q:
+                    game_running = False
+                if event.key == pygame.K_LEFT:
+                    letjelica1.promjena_poz_x = -5
+                if event.key == pygame.K_RIGHT:
+                    letjelica1.promjena_poz_x = 5
+                if event.key == pygame.K_UP:
+                    letjelica1.promjena_poz_y = -5
+                if event.key == pygame.K_DOWN:
+                    letjelica1.promjena_poz_y = 5
+                if event.key == pygame.K_SPACE:
+                    letjelica1.pew_pew()
+                if event.key == pygame.K_a:
+                    letjelica2.promjena_poz_x = -5
+                if event.key == pygame.K_d:
+                    letjelica2.promjena_poz_x = 5
+                if event.key == pygame.K_w:
+                    letjelica2.promjena_poz_y = -5
+                if event.key == pygame.K_s:
+                    letjelica2.promjena_poz_y = 5
+                if event.key == pygame.K_RETURN:
+                    letjelica2.pew_pew()
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    letjelica1.promjena_poz_x = 0
+                if event.key == pygame.K_RIGHT:
+                    letjelica1.promjena_poz_x = 0
+                if event.key == pygame.K_UP:
+                    letjelica1.promjena_poz_y = 0
+                if event.key == pygame.K_DOWN:
+                    letjelica1.promjena_poz_y = 0
+                if event.key == pygame.K_a:
+                    letjelica2.promjena_poz_x = 0
+                if event.key == pygame.K_d:
+                    letjelica2.promjena_poz_x = 0
+                if event.key == pygame.K_w:
+                    letjelica2.promjena_poz_y = 0
+                if event.key == pygame.K_s:
+                    letjelica2.promjena_poz_y = 0
+
+        if (letjelica1.position[0] + letjelica1.promjena_poz_x) < (width-letjelica1.width) and (letjelica1.position[0] + letjelica1.promjena_poz_x) > -11:
+            letjelica1.position[0] += letjelica1.promjena_poz_x
+
+        if (letjelica1.position[1] + letjelica1.promjena_poz_y) < (height-letjelica1.height+5) and (letjelica1.position[1] + letjelica1.promjena_poz_y) > 0:
+            letjelica1.position[1] += letjelica1.promjena_poz_y
+
+
+        if (letjelica2.position[0] + letjelica2.promjena_poz_x) < (width-letjelica2.width) and (letjelica2.position[0] + letjelica2.promjena_poz_x) > -11:
+            letjelica2.position[0] += letjelica2.promjena_poz_x
+
+        if (letjelica2.position[1] + letjelica2.promjena_poz_y) < (height-letjelica2.height+5) and (letjelica2.position[1] + letjelica2.promjena_poz_y) > 0:
+            letjelica2.position[1] += letjelica2.promjena_poz_y
+        
+
+        #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
+        #presane crtat i mice metak iz arraya
+        if len(Pew_Pew) > 0:
+            for x in Pew_Pew :
+                if x[1] > 0:
+                    x[1] -= 10
+                    pygame.draw.rect(screen,orange,x)
+                elif x[1] < 0:
+                    Pew_Pew.remove(x)
+                                 
+        screen.blit(letjelica1.img_path, (letjelica1.position[0], letjelica1.position[1]))
+        screen.blit(letjelica2.img_path, (letjelica2.position[0], letjelica2.position[1]))
+ #       screen.blit(meteor_najmanji, (width*0.5, height*0.5))
+ #       screen.blit(meteor_srednji, (width*0.7, height*0.5))
+        pygame.display.update()
+        
+        clock.tick(fps)
+        
+    pygame.quit()
+    quit()
+
     
 
 def main (): #glavna funkcija koja se prva pokrece
