@@ -1,4 +1,4 @@
-# razvoj Space_Thing 
+# razvoj Space_Thing 0.1
 
 import pygame
 import random
