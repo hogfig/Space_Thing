@@ -1,4 +1,4 @@
-# Razvoj 
+# Razvoj Space_Thing
 
 import pygame
 import random
