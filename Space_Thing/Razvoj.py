@@ -77,6 +77,8 @@ class Letjelica():
         self.promjena_poz_x = promjena_poz_x
         self.promjena_poz_y = promjena_poz_y
         self.life = 1
+        self.width = 49
+        self.height = 55
 
     def pew_pew(self):
         x = self.position[0] + 28
@@ -203,7 +205,7 @@ def PlayerOneGameLoop():
     letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0)
 
     meteor_najmanji = pygame.image.load('Asteroidi/Asteroid1.png')
-+    meteor_srednji = pygame.image.load('Asteroidi/medasteroid.png')
+    meteor_srednji = pygame.image.load('Asteroidi/medasteroid.png')
     
     while game_running:
         screen.fill(black)
