@@ -1,5 +1,6 @@
 print('hello world')
 x = 'Leo je gej'
+z= ' a '
 y = 'Marko je kralj'
 
-print (x,' a ',y)
+print (x,z,y)
