@@ -11,17 +11,15 @@ size=width,height= 920,640
 screen=pygame.display.set_mode(size)
 clock= pygame.time.Clock()
 fps= 60
-
+meteor_speed = 5
+meteor_size = 1
+asteroid_speed = 3
 meteor_num = 200
 
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
-asteroidi = [] #meteori u igrici
-
-meteor_speed = 5
-meteor_size = 1
-asteroid_speed = 3
+asteroidi = [] #meteori u igrici}
 
 class Asteroidi():
     def __init__(self, position, health, img):
@@ -101,16 +99,17 @@ class Letjelica():
                 elif pew[1] < 0:
                     Pew_Pew.remove(pew)
                 
+def init_Stars():
+    for i in range(0, 49): 
+        x = random.randrange(0, width)
+        y = random.randrange(0, height)
+        Stars.append([x,y])
 
-for i in range(0, 49): 
-    x = random.randrange(0, width)
-    y = random.randrange(0, height)
-    Stars.append([x,y])
-    
-for m in range(meteor_num): # dodjeljujes random koordinate za meteore i spremas ih u array  
-    x = random.randrange(0, width)
-    y = random.randrange(0, height)
-    Meteors.append([x,y])
+def init_Meteori():
+    for m in range(meteor_num): # dodjeljujes random koordinate za meteore i spremas ih u array  
+        x = random.randrange(0, width)
+        y = random.randrange(0, height)
+        Meteors.append([x,y])
         
 #Funkcija glavnog menija koja se otvara pri pokretanju igrice
 def main_menu():
@@ -373,6 +372,11 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
 
     
 def main (): #glavna funkcija koja se prva pokrece
+    
+    init_Stars()
+    init_Meteori()
+
+
     pygame.init()
     main_menu()
 
