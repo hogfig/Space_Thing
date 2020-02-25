@@ -41,7 +41,7 @@ class Asteroidi():
             UpdateScore()
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
-        if count % fps == 0:
+        if count % 10 == 0:
             A = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'))
             asteroidi.append(A)
         elif count % 201 == 0:
