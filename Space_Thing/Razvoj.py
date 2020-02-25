@@ -20,33 +20,41 @@ meteor_num = 200
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
-asteroidi = [] #meteori u igrici}
+asteroidi = [] #meteori u igrici
 Score = []
 
 
 class Asteroidi():
-    def __init__(self, position, health, img):
+    def __init__(self, position, health, img, size):
         self.position = position
         self.health = health
         self.img = img
+        self.size = size
         
         rect = self.img.get_rect()
         self.rect = pygame.Rect(position[0], position[1], rect[2], rect[3])       
+
     def To_screen(self,count, i):
         if self.health != 0:
             self.rect[1] += asteroid_speed
             screen.blit(self.img,(self.rect[0],self.rect[1]))
         else:
-            asteroidi.remove(i)
-            UpdateScore()
+            if self.size == 'small':
+                asteroidi.remove(i)
+                UpdateScore(10)
+            else:
+                asteroidi.remove(i)
+                UpdateScore(25)
+
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
         if count % fps == 0:
-            A = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'))
-            asteroidi.append(A)
+            small = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
+            asteroidi.append(small)
         elif count % 201 == 0:
-            A = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'))
-            asteroidi.append(A)
+            medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
+            asteroidi.append(medium)
+
     def CheckAsteroid(count,):
         if len(asteroidi) > 0:
             for i in asteroidi:
@@ -116,8 +124,8 @@ def init_Meteori():
         y = random.randrange(0, height)
         Meteors.append([x,y])
 
-def UpdateScore():
-    Score[0] += 1
+def UpdateScore(num):
+    Score[0] += num 
         
 #Funkcija glavnog menija koja se otvara pri pokretanju igrice
 def main_menu():
