@@ -49,7 +49,7 @@ class Asteroidi():
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
         if count % fps == 0:
-            small = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
+            small = Asteroidi([random.randrange(0, width),-10], 1, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
             asteroidi.append(small)
         elif count % 201 == 0:
             medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
@@ -125,7 +125,7 @@ def init_Meteori():
         Meteors.append([x,y])
 
 def UpdateScore(num):
-    Score[0] += num 
+    Score[0] += num
         
 #Funkcija glavnog menija koja se otvara pri pokretanju igrice
 def main_menu():
