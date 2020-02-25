@@ -49,7 +49,7 @@ class Asteroidi():
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
         if count % 10 == 0:
-            A = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'))
+            A = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
             asteroidi.append(A)
         elif count % 201 == 0:
             medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
