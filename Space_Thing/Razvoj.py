@@ -48,9 +48,9 @@ class Asteroidi():
 
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
-        if count % 10 == 0:
-            A = Asteroidi([random.randrange(0, width),-10], 2, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
-            asteroidi.append(A)
+        if count % fps == 0:
+            small = Asteroidi([random.randrange(0, width),-10], 1, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
+            asteroidi.append(small)
         elif count % 201 == 0:
             medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
             asteroidi.append(medium)
@@ -81,7 +81,7 @@ class Message_to_screen():
        
 #Klasa za mehaniku letjelice i metaka
 class Letjelica():
-    def __init__(self, position, img_path, promjena_poz_x, promjena_poz_y):
+    def __init__(self, position, img_path, promjena_poz_x, promjena_poz_y,health):
         self.position = position
         self.img_path = pygame.image.load(img_path)
         self.promjena_poz_x = promjena_poz_x
@@ -89,6 +89,7 @@ class Letjelica():
         self.life = 1
         self.width = 49
         self.height = 55
+        self.health = health
 
     def pew_pew(self):
         x = self.position[0] + 28
@@ -208,7 +209,7 @@ def main_menu():
 
         pygame.display.update()                     
         clock.tick(fps)
-        
+
     pygame.quit()
     quit()
 
@@ -216,7 +217,7 @@ def PlayerOneGameLoop():
     game_running = True
     count = 0 #brojac koji se koristi u while loopu
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x
-    letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0)
+    letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0, 3)
     Score.append(0) 
 
     while game_running:
@@ -263,7 +264,7 @@ def PlayerOneGameLoop():
             letjelica.position[0] += letjelica.promjena_poz_x
         if (letjelica.position[1] + letjelica.promjena_poz_y) < (height-letjelica.height+5) and (letjelica.position[1] + letjelica.promjena_poz_y) > 0:
             letjelica.position[1] += letjelica.promjena_poz_y                 
-
+        
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
         Letjelica.LoadPewPew()
@@ -286,8 +287,8 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
     game_running = True
 
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x
-    letjelica1 = Letjelica([width*0.4,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0)
-    letjelica2 = Letjelica([width*0.6,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0)
+    letjelica1 = Letjelica([width*0.4,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0, 3)
+    letjelica2 = Letjelica([width*0.6,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0, 3)
     
     while game_running:
         screen.fill(black)
