@@ -236,7 +236,7 @@ def PlayerOneGameLoop():
 
     while game_running:
         screen.fill(black)
-        S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [50, 20], 'SCORE    ' + str(Score[0]))
+        S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [65, 20], 'SCORE    ' + str(Score[0]))
         S.Display() 
         DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje)
         #Blok za crtanje background zvezda
