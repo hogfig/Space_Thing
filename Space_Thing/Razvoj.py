@@ -16,14 +16,12 @@ meteor_size = 1
 asteroid_speed = 3
 meteor_num = 200
 
-
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = []
-
-
+Score = [] # lista za pracenje rezultata
+index = [0]
 class Asteroidi():
     def __init__(self, position, health, img, size):
         self.position = position
@@ -86,7 +84,6 @@ class Letjelica():
         self.img_path = pygame.image.load(img_path)
         self.promjena_poz_x = promjena_poz_x
         self.promjena_poz_y = promjena_poz_y
-        self.life = 1
         self.width = 49
         self.height = 55
         self.health = health
@@ -127,7 +124,20 @@ def init_Meteori():
 
 def UpdateScore(num):
     Score[0] += num
-        
+
+def DisplayLife(count, HP, Srce_gore, Srce_dolje):
+    offset = 20
+    x_kord = width - 20
+    Srca=[Srce_dolje,Srce_gore]
+    for x in range(HP):        
+        x_kord -= offset
+        if count%fps*2 >= 0 and count%fps*2 <=60 :
+            index[0] = 1
+        elif count%fps*2 > 60 and count%fps*2 <= 119:
+            index[0] = 0
+        screen.blit(Srca[index[0]], (x_kord, 10))
+
+
 #Funkcija glavnog menija koja se otvara pri pokretanju igrice
 def main_menu():
     menu_running = True
@@ -150,6 +160,7 @@ def main_menu():
         x_icon = pygame.image.load('Menu_icons/x_icon.png') #Slika iksića
         screen.blit(x_icon, (width*0.02, height*0.02))
         screen.blit(space_img, (width*0.429, height*0.4))
+        
 
 
         if Player1_text.rect.collidepoint(pygame.mouse.get_pos()): #ako je mis iznad teksta hand solo napravi 3D kurac
@@ -216,14 +227,18 @@ def main_menu():
 def PlayerOneGameLoop():
     game_running = True
     count = 0 #brojac koji se koristi u while loopu
+    Srce_gore = pygame.image.load('Animacije/HeartUp.png')
+    Srce_dolje = pygame.image.load('Animacije/HeartDown.png')
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x
     letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0, 3)
     Score.append(0) 
+    
 
     while game_running:
         screen.fill(black)
         S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [50, 20], 'SCORE    ' + str(Score[0]))
         S.Display() 
+        DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje)
         #Blok za crtanje background zvezda
         for i in Stars:
             if i[1]< height:
