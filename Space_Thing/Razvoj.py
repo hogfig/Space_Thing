@@ -91,8 +91,8 @@ class Letjelica():
         self.rect = pygame.Rect(position[0], position[1], rect[2], rect[3])
 
     def pew_pew(self):
-        x = self.position[0] + 28
-        y = self.position[1] - 5
+        x = self.rect[0] + 28
+        y = self.rect[1] - 5
         size = 3
         pew = pygame.Rect(x,y,size,size)
         Pew_Pew.append(pew)
@@ -226,6 +226,24 @@ def main_menu():
     pygame.quit()
     quit()
 
+def GameOver():
+    game_over_running = True
+    pygame.mixer.music.load('Pjesme\SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)
+    
+    while game_over_running == True:
+        screen.fill(black)
+        GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width/2, height*0.3], 'GAME OVER')
+        GameOverMessage.Display()
+        pygame.display.update()                     
+        clock.tick(fps)
+    pygame.quit()
+    quit()
+
+
+
+
 def PlayerOneGameLoop():
     game_running = True
     count = 0 #brojac koji se koristi u while loopu
@@ -240,9 +258,17 @@ def PlayerOneGameLoop():
         S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [65, 20], 'SCORE    ' + str(Score[0]))
         S.Display() 
         DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje)
+        
+        #asteroid collision, health-1 i brise asteroid
         for i in asteroidi:
             if letjelica.rect.colliderect(i.rect):
-                letjelica.health -= 1 
+                letjelica.health -= 1
+                asteroidi.remove(i)
+
+        if letjelica.health == 0:
+            GameOver()
+
+
         #Blok za crtanje background zvezda
         for i in Stars:
             if i[1]< height:
