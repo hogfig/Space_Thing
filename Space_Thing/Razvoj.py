@@ -202,8 +202,8 @@ def main_menu():
                     pygame.draw.circle(screen,(250,255,0),i, meteor_size)
                 else:
                     pygame.draw.circle(screen,(255,253,168),i, meteor_size)
-  
-        
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
                 menu_running = False
@@ -220,6 +220,7 @@ def main_menu():
                 PlayerTwoGameLoop()
             if event.type == pygame.MOUSEBUTTONDOWN and x_icon.get_rect().collidepoint(pygame.mouse.get_pos()):
                 menu_running = False
+                
 
         pygame.display.update()                     
         clock.tick(fps)
@@ -287,49 +288,73 @@ def PlayerOneGameLoop():
                 pygame.draw.rect(screen,white,[i[0], i[1], 1, 1])
             elif i[1] > height: 
                 i[1] = 1
-
+        #STARI NACIN KRETANJA 
+        #  for event in pygame.event.get():
+        #     if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
+        #         game_running = False
+        #     if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
+        #         if event.key == pygame.K_q:
+        #             game_running = False
+        #         if event.key == pygame.K_ESCAPE:
+        #             main_menu()
+        #         if event.key == pygame.K_LEFT:
+        #            # letjelica.promjena_poz_x = -5
+        #             letjelica.rect.x -= 5
+        #         if event.key == pygame.K_RIGHT:
+        #             #letjelica.promjena_poz_x = 5  
+        #             letjelica.rect.move_ip(5,0)
+        #         if event.key == pygame.K_UP:
+        #             #letjelica.promjena_poz_y = -5
+        #             letjelica.rect.move_ip(0,-5)
+        #         if event.key == pygame.K_DOWN:
+        #             #letjelica.promjena_poz_y = 5
+        #             letjelica.rect.move_ip(0,5)
+        #         if event.key == pygame.K_SPACE:
+        #             letjelica.pew_pew()
+        #     if event.type == pygame.KEYUP:
+        #         if event.key == pygame.K_LEFT:
+        #             #letjelica.promjena_poz_x = 0
+        #             letjelica.rect.move_ip(0,0)
+        #         if event.key == pygame.K_RIGHT:
+        #             #letjelica.promjena_poz_x = 0
+        #             letjelica.rect.move_ip(0,0)
+        #         if event.key == pygame.K_UP:
+        #             #letjelica.promjena_poz_y = 0
+        #             letjelica.rect.move_ip(0,0)
+        #         if event.key == pygame.K_DOWN:
+        #             #letjelica.promjena_poz_y = 0
+        #             letjelica.rect.move_ip(0,0)
+        
+        #NOVI NACIN KRETANJA
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
+            if event.type == pygame.QUIT:
                 game_running = False
             if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
                 if event.key == pygame.K_q:
                     game_running = False
                 if event.key == pygame.K_ESCAPE:
                     main_menu()
-                if event.key == pygame.K_LEFT:
-                   # letjelica.promjena_poz_x = -5
-                    letjelica.rect.move_ip(-5,0)
-                if event.key == pygame.K_RIGHT:
-                    #letjelica.promjena_poz_x = 5  
-                    letjelica.rect.move_ip(5,0)
-                if event.key == pygame.K_UP:
-                    #letjelica.promjena_poz_y = -5
-                    letjelica.rect.move_ip(0,-5)
-                if event.key == pygame.K_DOWN:
-                    #letjelica.promjena_poz_y = 5
-                    letjelica.rect.move_ip(0,5)
                 if event.key == pygame.K_SPACE:
                     letjelica.pew_pew()
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    #letjelica.promjena_poz_x = 0
-                    letjelica.rect.move_ip(0,0)
-                if event.key == pygame.K_RIGHT:
-                    #letjelica.promjena_poz_x = 0
-                    letjelica.rect.move_ip(0,0)
-                if event.key == pygame.K_UP:
-                    #letjelica.promjena_poz_y = 0
-                    letjelica.rect.move_ip(0,0)
-                if event.key == pygame.K_DOWN:
-                    #letjelica.promjena_poz_y = 0
-                    letjelica.rect.move_ip(0,0)
-        
+        pressed = pygame.key.get_pressed()
+        if pressed[pygame.K_UP]:
+            letjelica.rect.y -= 5
+        if pressed[pygame.K_DOWN]:
+            letjelica.rect.y += 5
+        if pressed[pygame.K_LEFT]:
+            letjelica.rect.x -= 5
+        if pressed[pygame.K_RIGHT]:
+            letjelica.rect.x += 5   
+
+
+
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana      
         
-        if (letjelica.position[0] + letjelica.promjena_poz_x) < (width-letjelica.width) and (letjelica.position[0] + letjelica.promjena_poz_x) > -11:
-            letjelica.position[0] += letjelica.promjena_poz_x
-        if (letjelica.position[1] + letjelica.promjena_poz_y) < (height-letjelica.height+5) and (letjelica.position[1] + letjelica.promjena_poz_y) > 0:
-            letjelica.position[1] += letjelica.promjena_poz_y                 
+        #stari nacin da letjelica ne izade iz ekrana
+        #if (letjelica.position[0] + letjelica.promjena_poz_x) < (width-letjelica.width) and (letjelica.position[0] + letjelica.promjena_poz_x) > -11:
+        #    letjelica.position[0] += letjelica.promjena_poz_x
+        #if (letjelica.position[1] + letjelica.promjena_poz_y) < (height-letjelica.height+5) and (letjelica.position[1] + letjelica.promjena_poz_y) > 0:
+        #    letjelica.position[1] += letjelica.promjena_poz_y                 
         
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
