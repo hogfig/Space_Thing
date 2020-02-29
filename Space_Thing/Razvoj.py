@@ -15,6 +15,7 @@ meteor_speed = 5
 meteor_size = 1
 asteroid_speed = 3
 meteor_num = 200
+screen_rect = screen.get_rect()
 
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
@@ -226,7 +227,7 @@ def main_menu():
     pygame.quit()
     quit()
 
-def GameOver():
+def GameOver(score):
     game_over_running = True
     pygame.mixer.music.load('Pjesme\SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.5)
@@ -236,8 +237,18 @@ def GameOver():
         screen.fill(black)
         GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width/2, height*0.3], 'GAME OVER')
         GameOverMessage.Display()
+        GameOverScore = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), (height/2) + 50], 'SCORE    ' + str(score))
+        GameOverScore.Display()
         pygame.display.update()                     
         clock.tick(fps)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
+                game_over_running = False
+            if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
+                if event.key == pygame.K_q:
+                    game_over_running = False
+
     pygame.quit()
     quit()
 
@@ -266,7 +277,7 @@ def PlayerOneGameLoop():
                 asteroidi.remove(i)
 
         if letjelica.health == 0:
-            GameOver()
+            GameOver(Score[0])
 
 
         #Blok za crtanje background zvezda
@@ -312,7 +323,9 @@ def PlayerOneGameLoop():
                 if event.key == pygame.K_DOWN:
                     #letjelica.promjena_poz_y = 0
                     letjelica.rect.move_ip(0,0)
-                    
+        
+        letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana      
+        
         if (letjelica.position[0] + letjelica.promjena_poz_x) < (width-letjelica.width) and (letjelica.position[0] + letjelica.promjena_poz_x) > -11:
             letjelica.position[0] += letjelica.promjena_poz_x
         if (letjelica.position[1] + letjelica.promjena_poz_y) < (height-letjelica.height+5) and (letjelica.position[1] + letjelica.promjena_poz_y) > 0:
