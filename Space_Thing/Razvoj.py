@@ -3,6 +3,7 @@
 import pygame
 import random
 import time
+import shelve 
 
 white=(255,255,255)
 orange = (255,162,0)
@@ -16,6 +17,8 @@ meteor_size = 1
 asteroid_speed = 3
 meteor_num = 200
 screen_rect = screen.get_rect()
+d  = shelve.open('SaveFiles/highscore.txt')
+
 
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
@@ -106,7 +109,7 @@ class Letjelica():
                         if pew.colliderect(i.rect):
                             Pew_Pew.remove(pew)
                             i.health -= 1
-                            
+ 
                 if pew[1] > 0:
                     pew[1] -= 10
                     pygame.draw.rect(screen,orange,pew)
@@ -236,10 +239,15 @@ def GameOver(score):
     
     while game_over_running == True:
         screen.fill(black)
-        GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width/2, height*0.3], 'GAME OVER')
+        GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',50), (255,255,255), [width/2, height*0.3], 'GAME OVER')
         GameOverMessage.Display()
-        GameOverScore = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), (height/2) + 50], 'SCORE    ' + str(score))
+        GameOverScore = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), height*0.4], 'YOUR      SCORE    ' + str(score))
         GameOverScore.Display()
+        HighscoreMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',35), (255,255,255), [width/2, height*0.6], 'ALL TIME     HIGHSCORE')
+        HighscoreMessage.Display()
+        HighscoreNumba = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), height*0.7], str(d['highscore']))
+        HighscoreNumba.Display()
+        
         pygame.display.update()                     
         clock.tick(fps)
 
@@ -278,6 +286,8 @@ def PlayerOneGameLoop():
                 asteroidi.remove(i)
 
         if letjelica.health == 0:
+            if Score[0] > d['highscore']:
+                d['highscore'] = Score[0]
             GameOver(Score[0])
 
 
