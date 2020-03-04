@@ -3,6 +3,7 @@
 import pygame
 import random
 import time
+import shelve 
 
 white=(255,255,255)
 orange = (255,162,0)
@@ -16,6 +17,8 @@ meteor_size = 1
 asteroid_speed = 3
 meteor_num = 200
 screen_rect = screen.get_rect()
+d  = shelve.open('SaveFiles/highscore.txt')
+
 
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
@@ -54,7 +57,7 @@ class Asteroidi():
             medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
             asteroidi.append(medium)
 
-    def CheckAsteroid(count,):
+    def CheckAsteroid(count):
         if len(asteroidi) > 0:
             for i in asteroidi:
                 i.To_screen(count, i) 
@@ -106,7 +109,7 @@ class Letjelica():
                         if pew.colliderect(i.rect):
                             Pew_Pew.remove(pew)
                             i.health -= 1
-                            
+ 
                 if pew[1] > 0:
                     pew[1] -= 10
                     pygame.draw.rect(screen,orange,pew)
@@ -163,7 +166,7 @@ def main_menu():
         x_icon = pygame.image.load('Menu_icons/x_icon.png') #Slika iksića
         screen.blit(x_icon, (width*0.02, height*0.02))
         screen.blit(space_img, (width*0.429, height*0.4))
-        
+
 
 
         if Player1_text.rect.collidepoint(pygame.mouse.get_pos()): #ako je mis iznad teksta hand solo napravi 3D kurac
@@ -236,10 +239,25 @@ def GameOver(score):
     
     while game_over_running == True:
         screen.fill(black)
-        GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width/2, height*0.3], 'GAME OVER')
+        GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',50), (255,255,255), [width/2, height*0.3], 'GAME OVER')
         GameOverMessage.Display()
-        GameOverScore = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), (height/2) + 50], 'SCORE    ' + str(score))
+        GameOverScore = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), height*0.4], 'YOUR      SCORE    ' + str(score))
         GameOverScore.Display()
+        HighscoreMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',35), (255,255,255), [width/2, height*0.6], 'ALL TIME     HIGHSCORE')
+        HighscoreMessage.Display()
+        HighscoreNumba = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), height*0.7], str(d['highscore']))
+        HighscoreNumba.Display()
+        PlayAgainMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',50), (255,255,255), [width/2, height*0.85], 'PLAY    AGAIN')
+        PlayAgainMessage.Display()
+        
+        if PlayAgainMessage.rect.collidepoint(pygame.mouse.get_pos()): #ako je mis iznad teksta helping hand napravi 3D kurac
+            PlayAgainMessage.font = pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',60)
+            PlayAgainMessage.color = (239, 90, 150)
+            PlayAgainMessage_3D = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',55), (58,255,249), [width/2, height*0.85], 'PLAY    AGAIN')
+            PlayAgainMessage_3D.Display()
+            PlayAgainMessage.Display()
+
+
         pygame.display.update()                     
         clock.tick(fps)
 
@@ -252,6 +270,10 @@ def GameOver(score):
                 if event.key == pygame.K_ESCAPE:
                     main_menu()
 
+            if event.type == pygame.MOUSEBUTTONDOWN and PlayAgainMessage.rect.collidepoint(pygame.mouse.get_pos()):
+                game_over_running = False
+                pygame.mixer.music.stop()
+                PlayerOneGameLoop()
     pygame.quit()
     quit()
 
@@ -266,6 +288,8 @@ def PlayerOneGameLoop():
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0, 3)
     Score.append(0) 
+    crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
+
 
     while game_running:
         screen.fill(black)
@@ -276,10 +300,13 @@ def PlayerOneGameLoop():
         #asteroid collision, health-1 i brise asteroid
         for i in asteroidi:
             if letjelica.rect.colliderect(i.rect):
+                pygame.mixer.Sound.play(crash_sound)
                 letjelica.health -= 1
                 asteroidi.remove(i)
 
         if letjelica.health == 0:
+            if Score[0] > d['highscore']:
+                d['highscore'] = Score[0]
             GameOver(Score[0])
 
 
