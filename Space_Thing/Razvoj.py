@@ -20,12 +20,16 @@ screen_rect = screen.get_rect()
 d  = shelve.open('SaveFiles/highscore.txt')
 
 
+
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
 Score = [] # lista za pracenje rezultata
 index = [0]
+
+
+    
 class Asteroidi():
     def __init__(self, position, health, img, size):
         self.position = position
@@ -35,6 +39,7 @@ class Asteroidi():
         
         rect = self.img.get_rect()
         self.rect = pygame.Rect(position[0], position[1], rect[2], rect[3])       
+
 
     def To_screen(self,count, i):
         if self.health != 0:
@@ -47,6 +52,7 @@ class Asteroidi():
             else:
                 asteroidi.remove(i)
                 UpdateScore(25)
+
 
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
@@ -69,7 +75,7 @@ class Asteroidi():
             medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
             asteroidi.append(medium)
 
-    def CheckAsteroid(count):
+    def CheckAsteroid( count):
         if len(asteroidi) > 0:
             for i in asteroidi:
                 i.To_screen(count, i) 
@@ -269,7 +275,6 @@ def GameOver(score):
             PlayAgainMessage_3D.Display()
             PlayAgainMessage.Display()
 
-
         pygame.display.update()                     
         clock.tick(fps)
 
@@ -301,9 +306,17 @@ def PlayerOneGameLoop():
     letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/letjelica_0.png', 0, 0, 3)
     Score.append(0) 
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
+<<<<<<< HEAD
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
     pygame.mixer.music.play(-1)
+=======
+    
+    Score[0] = 0            #ocisti score na pocetku igre, tako da kad ides na play again score ne nastavlja iz prosle igre nego je opet na nula
+    asteroidi.clear()       #ocisti asteroidi na pocetku igre, kad ides na play again svi asteroidi se obrisu i ponovno kreiraju
+    Pew_Pew.clear()         #isto kao za asteroide ali za pewpew
+
+>>>>>>> 5388be9e1c2666b41c8ee341a6a8aafd7b67345d
 
     
 
@@ -361,7 +374,11 @@ def PlayerOneGameLoop():
             value = pygame.mixer.music.get_volume() + 0.01  
             pygame.mixer.music.set_volume(value)
 
+<<<<<<< HEAD
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
+=======
+        letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                    
+>>>>>>> 5388be9e1c2666b41c8ee341a6a8aafd7b67345d
         
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
@@ -369,9 +386,13 @@ def PlayerOneGameLoop():
         #Mehanizam za meteore
         Asteroidi.LoadAsteroidi(count)
         #Provjeri ako ima asteroida i onda zovi funkciju da ih crtas
+<<<<<<< HEAD
         Asteroidi.CheckAsteroid(count)                            
+=======
+        Asteroidi.CheckAsteroid(count)
+>>>>>>> 5388be9e1c2666b41c8ee341a6a8aafd7b67345d
         screen.blit(letjelica.img_path,(letjelica.rect[0],letjelica.rect[1]))
-
+        #screen.blit(heart.img, (heart.rect[0], heart.rect[1]))
         #screen.blit(letjelica.img_path, (letjelica.position[0], letjelica.position[1]))      
         pygame.display.update()
         
