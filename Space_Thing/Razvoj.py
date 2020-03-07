@@ -50,10 +50,22 @@ class Asteroidi():
 
     #puni listu meteori s objektima Meteori 
     def LoadAsteroidi(count):
-        if count % fps == 0:
+        oduzmi_small = 1
+        oduzmi_medium = 1
+        if Score[0]>200:
+            oduzmi_small = 5
+            oduzmi_medium = 50
+        elif Score[0] > 700:
+            oduzmi_small = 10
+            oduzmi_medium = 70
+        elif Score[0] > 1300:
+            oduzmi_small = 20
+            oduzmi_medium = 100
+
+        if count % (fps/2 - oduzmi_small) == 0:
             small = Asteroidi([random.randrange(0, width),-10], 1, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
             asteroidi.append(small)
-        elif count % 201 == 0:
+        elif count % (201-oduzmi_medium) == 0:
             medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
             asteroidi.append(medium)
 
@@ -286,10 +298,14 @@ def PlayerOneGameLoop():
     Srce_gore = pygame.image.load('Animacije/HeartUp.png')
     Srce_dolje = pygame.image.load('Animacije/HeartDown.png')
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
-    letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/smth-pixilart.png', 0, 0, 3)
+    letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/letjelica_0.png', 0, 0, 3)
     Score.append(0) 
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
+    pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
+    pygame.mixer.music.set_volume(0.05)
+    pygame.mixer.music.play(-1)
 
+    
 
     while game_running:
         screen.fill(black)
@@ -307,6 +323,7 @@ def PlayerOneGameLoop():
         if letjelica.health == 0:
             if Score[0] > d['highscore']:
                 d['highscore'] = Score[0]
+            pygame.mixer.music.stop()
             GameOver(Score[0])
 
 
@@ -317,42 +334,6 @@ def PlayerOneGameLoop():
                 pygame.draw.rect(screen,white,[i[0], i[1], 1, 1])
             elif i[1] > height: 
                 i[1] = 1
-        #STARI NACIN KRETANJA 
-        #  for event in pygame.event.get():
-        #     if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
-        #         game_running = False
-        #     if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
-        #         if event.key == pygame.K_q:
-        #             game_running = False
-        #         if event.key == pygame.K_ESCAPE:
-        #             main_menu()
-        #         if event.key == pygame.K_LEFT:
-        #            # letjelica.promjena_poz_x = -5
-        #             letjelica.rect.x -= 5
-        #         if event.key == pygame.K_RIGHT:
-        #             #letjelica.promjena_poz_x = 5  
-        #             letjelica.rect.move_ip(5,0)
-        #         if event.key == pygame.K_UP:
-        #             #letjelica.promjena_poz_y = -5
-        #             letjelica.rect.move_ip(0,-5)
-        #         if event.key == pygame.K_DOWN:
-        #             #letjelica.promjena_poz_y = 5
-        #             letjelica.rect.move_ip(0,5)
-        #         if event.key == pygame.K_SPACE:
-        #             letjelica.pew_pew()
-        #     if event.type == pygame.KEYUP:
-        #         if event.key == pygame.K_LEFT:
-        #             #letjelica.promjena_poz_x = 0
-        #             letjelica.rect.move_ip(0,0)
-        #         if event.key == pygame.K_RIGHT:
-        #             #letjelica.promjena_poz_x = 0
-        #             letjelica.rect.move_ip(0,0)
-        #         if event.key == pygame.K_UP:
-        #             #letjelica.promjena_poz_y = 0
-        #             letjelica.rect.move_ip(0,0)
-        #         if event.key == pygame.K_DOWN:
-        #             #letjelica.promjena_poz_y = 0
-        #             letjelica.rect.move_ip(0,0)
         
         #NOVI NACIN KRETANJA
         for event in pygame.event.get():
@@ -375,15 +356,12 @@ def PlayerOneGameLoop():
         if pressed[pygame.K_RIGHT]:
             letjelica.rect.x += 5   
 
+        #FADE IN VOLUME
+        if pygame.mixer.music.get_volume() < 0.4:
+            value = pygame.mixer.music.get_volume() + 0.01  
+            pygame.mixer.music.set_volume(value)
 
-
-        letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana      
-        
-        #stari nacin da letjelica ne izade iz ekrana
-        #if (letjelica.position[0] + letjelica.promjena_poz_x) < (width-letjelica.width) and (letjelica.position[0] + letjelica.promjena_poz_x) > -11:
-        #    letjelica.position[0] += letjelica.promjena_poz_x
-        #if (letjelica.position[1] + letjelica.promjena_poz_y) < (height-letjelica.height+5) and (letjelica.position[1] + letjelica.promjena_poz_y) > 0:
-        #    letjelica.position[1] += letjelica.promjena_poz_y                 
+        letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
         
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
@@ -392,7 +370,6 @@ def PlayerOneGameLoop():
         Asteroidi.LoadAsteroidi(count)
         #Provjeri ako ima asteroida i onda zovi funkciju da ih crtas
         Asteroidi.CheckAsteroid(count)                            
-
         screen.blit(letjelica.img_path,(letjelica.rect[0],letjelica.rect[1]))
 
         #screen.blit(letjelica.img_path, (letjelica.position[0], letjelica.position[1]))      
@@ -423,8 +400,6 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
             elif i[1] > height: 
                 i[1] = 1
                 
- #       meteor_najmanji = pygame.image.load('Asteroidi/Asteroid1.png')
- #       meteor_srednji = pygame.image.load('Asteroidi/medasteroid.png') 
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
@@ -498,8 +473,7 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
                                  
         screen.blit(letjelica1.img_path, (letjelica1.position[0], letjelica1.position[1]))
         screen.blit(letjelica2.img_path, (letjelica2.position[0], letjelica2.position[1]))
- #       screen.blit(meteor_najmanji, (width*0.5, height*0.5))
- #       screen.blit(meteor_srednji, (width*0.7, height*0.5))
+
         pygame.display.update()
         
         clock.tick(fps)
