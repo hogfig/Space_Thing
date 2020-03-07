@@ -153,7 +153,7 @@ def DisplayLife(count, HP, Srce_gore, Srce_dolje):
 #Funkcija glavnog menija koja se otvara pri pokretanju igrice
 def main_menu():
     menu_running = True
-    pygame.mixer.music.load('Pjesme\SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
+    pygame.mixer.music.load('Pjesme/SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)
 
@@ -239,7 +239,7 @@ def main_menu():
 
 def GameOver(score):
     game_over_running = True
-    pygame.mixer.music.load('Pjesme\SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
+    pygame.mixer.music.load('Pjesme/SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)
     
@@ -272,6 +272,9 @@ def GameOver(score):
             if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
                 if event.key == pygame.K_q:
                     game_over_running = False
+                if event.key == pygame.K_ESCAPE:
+                    main_menu()
+
             if event.type == pygame.MOUSEBUTTONDOWN and PlayAgainMessage.rect.collidepoint(pygame.mouse.get_pos()):
                 game_over_running = False
                 pygame.mixer.music.stop()
