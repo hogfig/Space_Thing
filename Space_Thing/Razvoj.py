@@ -306,17 +306,14 @@ def PlayerOneGameLoop():
     letjelica = Letjelica([width*0.5,height*0.90], 'Letjelice/letjelica_0.png', 0, 0, 3)
     Score.append(0) 
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
-<<<<<<< HEAD
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
     pygame.mixer.music.play(-1)
-=======
     
     Score[0] = 0            #ocisti score na pocetku igre, tako da kad ides na play again score ne nastavlja iz prosle igre nego je opet na nula
     asteroidi.clear()       #ocisti asteroidi na pocetku igre, kad ides na play again svi asteroidi se obrisu i ponovno kreiraju
     Pew_Pew.clear()         #isto kao za asteroide ali za pewpew
 
->>>>>>> 5388be9e1c2666b41c8ee341a6a8aafd7b67345d
 
     
 
@@ -374,11 +371,7 @@ def PlayerOneGameLoop():
             value = pygame.mixer.music.get_volume() + 0.01  
             pygame.mixer.music.set_volume(value)
 
-<<<<<<< HEAD
-        letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
-=======
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                    
->>>>>>> 5388be9e1c2666b41c8ee341a6a8aafd7b67345d
         
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
@@ -386,11 +379,7 @@ def PlayerOneGameLoop():
         #Mehanizam za meteore
         Asteroidi.LoadAsteroidi(count)
         #Provjeri ako ima asteroida i onda zovi funkciju da ih crtas
-<<<<<<< HEAD
-        Asteroidi.CheckAsteroid(count)                            
-=======
         Asteroidi.CheckAsteroid(count)
->>>>>>> 5388be9e1c2666b41c8ee341a6a8aafd7b67345d
         screen.blit(letjelica.img_path,(letjelica.rect[0],letjelica.rect[1]))
         #screen.blit(heart.img, (heart.rect[0], heart.rect[1]))
         #screen.blit(letjelica.img_path, (letjelica.position[0], letjelica.position[1]))      
