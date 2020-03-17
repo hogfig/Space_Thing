@@ -20,7 +20,7 @@ screen_rect = screen.get_rect()
 d  = shelve.open('SaveFiles/highscore.txt')
 
 
-
+asteroid_images  = []    #slike razlicitih asteroida, random se bira jedna kad se kreira asteroid
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
@@ -30,6 +30,26 @@ index = [0]
 
 all_sprites = pygame.sprite.Group()
 hearts = pygame.sprite.Group()
+asteroids = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load('Bullets/bullet.png')
+        #self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        # bullet position is according the player position
+        self.rect.centerx = x
+        self.rect.bottom = y
+        self.speedy = -15
+ 
+    def update(self):
+        self.rect.y += self.speedy
+ 
+        # if bullet goes off top of window, destroy it
+        if self.rect.bottom < 35:
+            self.kill()
 
 class Heart(pygame.sprite.Sprite):
     def __init__(self,image, x,y):
@@ -43,40 +63,56 @@ class Heart(pygame.sprite.Sprite):
         if self.rect.top > height:
             self.kill()
 
-class Asteroidi():
-    def __init__(self, position, health, img, size):
-        self.position = position
+class Asteroid(pygame.sprite.Sprite):
+    def __init__(self, image, health, size):
+        super().__init__()
         self.health = health
-        self.img = img
+        self.image = pygame.image.load(image)
         self.size = size
-        
-        rect = self.img.get_rect()
-        self.rect = pygame.Rect(position[0], position[1], rect[2], rect[3])       
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(0, width - self.rect.width)          #pri kreiranju asteroida bira se random x koordinata
+        self.rect.y = random.randrange(-100, -50)
+        self.speed = random.randrange(2,5)                                  #i random brzina kojom asteroid pada
+
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.top > height:
+            self.kill()
 
 
-    def To_screen(self,count, i):
-        if self.health != 0:
-            self.rect[1] += asteroid_speed
-            screen.blit(self.img,(self.rect[0],self.rect[1]))
-        else:
-            if self.size == 'small':
-                asteroidi.remove(i)
-                if random.randrange(0, 100) > 98:                                                  #svaki put kad je unisten mali asteroid,ima 2% sansa da dropa srce
-                    heart = Heart('Animacije/HeartPowerUp.png',self.rect[0],self.rect[1])
-                    all_sprites.add(heart)
-                    hearts.add(heart)
-                UpdateScore(10)
-            else:
-                asteroidi.remove(i)
-                if random.randrange(0, 100) > 95:                                                  #svaki put kad je unisten veliki asteroid, ima 5% sanse da dropa srce 
-                    heart = Heart('Animacije/HeartPowerUp.png',self.rect[0],self.rect[1])
-                    all_sprites.add(heart)
-                    hearts.add(heart)
-                UpdateScore(25)
+    # def To_screen(self,count, i):
+    #     if self.health != 0:
+    #         self.rect[1] += asteroid_speed
+    #         screen.blit(self.img,(self.rect[0],self.rect[1]))
+    #     else:
+    #         if self.size == 'small':
+    #             asteroidi.remove(i)
+    #             if random.randrange(0, 100) > 98:                                                  #svaki put kad je unisten mali asteroid,ima 2% sansa da dropa srce
+    #                 heart = Heart('Animacije\HeartPowerUp.png',self.rect[0],self.rect[1])
+    #                 all_sprites.add(heart)
+    #                 hearts.add(heart)
+    #             UpdateScore(10)
+    #         else:
+    #             asteroidi.remove(i)
+    #             if random.randrange(0, 100) > 95:                                                  #svaki put kad je unisten veliki asteroid, ima 5% sanse da dropa srce 
+    #                 heart = Heart('Animacije\HeartPowerUp.png',self.rect[0],self.rect[1])
+    #                 all_sprites.add(heart)
+    #                 hearts.add(heart)
+    #             UpdateScore(25)
 
 
-    #puni listu meteori s objektima Meteori 
-    def LoadAsteroidi(count):
+    # #puni listu meteori s objektima Meteori 
+    
+
+    # def CheckAsteroid(count):
+    #     if len(asteroidi) > 0:
+    #         for i in asteroidi:
+    #             i.To_screen(count, i) 
+       
+#Klasa koja sluzi za obradu i prikaz teksta na ekran   
+
+#Crta asteroide na ekran
+def LoadAsteroidi(count): 
         oduzmi_small = 1
         oduzmi_medium = 1
         if Score[0]>200:
@@ -90,18 +126,14 @@ class Asteroidi():
             oduzmi_medium = 100
 
         if count % (fps/2 - oduzmi_small) == 0:
-            small = Asteroidi([random.randrange(0, width),-10], 1, pygame.image.load('Asteroidi/Asteroid1.png'), 'small')
-            asteroidi.append(small)
+            small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
+            all_sprites.add(small_asteroid)
+            asteroids.add(small_asteroid)
         elif count % (201-oduzmi_medium) == 0:
-            medium = Asteroidi([random.randrange(0, width),-20], 3, pygame.image.load('Asteroidi/medasteroid.png'), 'medium')
-            asteroidi.append(medium)
+            small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
+            all_sprites.add(small_asteroid)
+            asteroids.add(small_asteroid)
 
-    def CheckAsteroid( count):
-        if len(asteroidi) > 0:
-            for i in asteroidi:
-                i.To_screen(count, i) 
-       
-#Klasa koja sluzi za obradu i prikaz teksta na ekran   
 class Message_to_screen():
 
     def __init__(self, font, color, position, msg):
@@ -130,33 +162,45 @@ class Letjelica(pygame.sprite.Sprite):
         self.width = 49
         self.height = 55
         self.speed = 0
+        self.shoot_delay = 100
+        self.last_shot = pygame.time.get_ticks()
+
+        
 
     def update(self):
-        self.rect.x += self.speed
-        self.rect.y += self.speed
+         self.rect.x += self.speed
+         self.rect.y += self.speed
+    
+    def shoot(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot > self.shoot_delay:
+            self.last_shot = current_time
+            bullet = Bullet(self.rect.centerx, self.rect.top)
+            all_sprites.add(bullet)
+            bullets.add(bullet)
 
 
-    def pew_pew(self):
-        x = self.rect[0] + 28
-        y = self.rect[1] - 5
-        size = 3
-        pew = pygame.Rect(x,y,size,size)
-        Pew_Pew.append(pew)
+    # def pew_pew(self):
+    #     x = self.rect[0] + 28
+    #     y = self.rect[1] - 5
+    #     size = 3
+    #     pew = pygame.Rect(x,y,size,size)
+    #     Pew_Pew.append(pew)
 
-    def LoadPewPew(): # za pucanje metaka, kada je u dodiru sa asteroidom obrisi metak i skini HP asteroidu
-        if len(Pew_Pew) > 0:
-            for pew in Pew_Pew :
-                if len(asteroidi) > 0:
-                    for i in asteroidi:
-                        if pew.colliderect(i.rect):
-                            Pew_Pew.remove(pew)
-                            i.health -= 1
+    # def LoadPewPew(): # za pucanje metaka, kada je u dodiru sa asteroidom obrisi metak i skini HP asteroidu
+    #     if len(Pew_Pew) > 0:
+    #         for pew in Pew_Pew :
+    #             if len(asteroidi) > 0:
+    #                 for i in asteroidi:
+    #                     if pew.colliderect(i.rect):
+    #                         Pew_Pew.remove(pew)
+    #                         i.health -= 1
  
-                if pew[1] > 0:
-                    pew[1] -= 10
-                    pygame.draw.rect(screen,orange,pew)
-                elif pew[1] < 0:
-                    Pew_Pew.remove(pew)
+    #             if pew[1] > 0:
+    #                 pew[1] -= 10
+    #                 pygame.draw.rect(screen,orange,pew)
+    #             elif pew[1] < 0:
+    #                 Pew_Pew.remove(pew)
                 
 def init_Stars():
     for i in range(0, 49): 
@@ -324,6 +368,7 @@ def PlayerOneGameLoop():
     count = 0 #brojac koji se koristi u while loopu
     Srce_gore = pygame.image.load('Animacije/HeartUp.png')
     Srce_dolje = pygame.image.load('Animacije/HeartDown.png')
+    
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica('Letjelice/letjelica_0.png', width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
@@ -334,6 +379,16 @@ def PlayerOneGameLoop():
     pygame.mixer.music.set_volume(0.05)
     pygame.mixer.music.play(-1)
 
+
+    # small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
+    # all_sprites.add(small_asteroid)
+    # asteroids.add(small_asteroid)
+    # small_asteroid1 = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
+    # all_sprites.add(small_asteroid1)
+    # asteroids.add(small_asteroid1)
+    # small_asteroid2 = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
+    # all_sprites.add(small_asteroid2)
+    # asteroids.add(small_asteroid2)
     
 
     while game_running:
@@ -342,12 +397,7 @@ def PlayerOneGameLoop():
         S.Display() 
         DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje)
         
-        #asteroid collision, health-1 i brise asteroid
-        for i in asteroidi:
-            if letjelica.rect.colliderect(i.rect):
-                pygame.mixer.Sound.play(crash_sound)
-                letjelica.health -= 1
-                asteroidi.remove(i)
+        
 
         if letjelica.health == 0:
             letjelica.kill()
@@ -375,7 +425,7 @@ def PlayerOneGameLoop():
                 if event.key == pygame.K_ESCAPE:
                     main_menu()
                 if event.key == pygame.K_SPACE:
-                    letjelica.pew_pew()
+                    letjelica.shoot()
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_UP]:
             letjelica.rect.y -= 5
@@ -386,12 +436,25 @@ def PlayerOneGameLoop():
         if pressed[pygame.K_RIGHT]:
             letjelica.rect.x += 5   
         
+        LoadAsteroidi(count) # Nacrtaj asteroide na ekran
+
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
         
-        hits = pygame.sprite.spritecollide(letjelica, hearts, True)
-        if hits:
+        heartHits = pygame.sprite.spritecollide(letjelica, hearts, True)
+        if heartHits:
             letjelica.health += 1
+
+        asteroidHits = pygame.sprite.spritecollide(letjelica, asteroids, True)
+        if asteroidHits:
+            pygame.mixer.Sound.play(crash_sound)
+            letjelica.health -= 1
+
+        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, True, pygame.sprite.collide_circle)
+        if pewpew_Hits:
+            UpdateScore(10)
+        #pewpewHits = pygame.sprite.spritecollide(sprite, group, dokill, collided = None)
+        
         
         #FADE IN VOLUME
         if pygame.mixer.music.get_volume() < 0.4:
@@ -402,11 +465,11 @@ def PlayerOneGameLoop():
         
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
-        Letjelica.LoadPewPew()
+        #Letjelica.LoadPewPew()
         #Mehanizam za meteore
-        Asteroidi.LoadAsteroidi(count)
+        #Asteroidi.LoadAsteroidi(count)
         #Provjeri ako ima asteroida i onda zovi funkciju da ih crtas
-        Asteroidi.CheckAsteroid(count)                            
+        #Asteroidi.CheckAsteroid(count)                            
         #screen.blit(heart.img, (heart.rect[0], heart.rect[1]))
         #screen.blit(letjelica.img_path, (letjelica.position[0], letjelica.position[1]))      
         pygame.display.update()
