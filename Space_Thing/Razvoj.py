@@ -62,14 +62,14 @@ class Asteroidi():
             if self.size == 'small':
                 asteroidi.remove(i)
                 if random.randrange(0, 100) > 98:                                                  #svaki put kad je unisten mali asteroid,ima 2% sansa da dropa srce
-                    heart = Heart('Animacije\HeartPowerUp.png',self.rect[0],self.rect[1])
+                    heart = Heart('Animacije/HeartPowerUp.png',self.rect[0],self.rect[1])
                     all_sprites.add(heart)
                     hearts.add(heart)
                 UpdateScore(10)
             else:
                 asteroidi.remove(i)
                 if random.randrange(0, 100) > 95:                                                  #svaki put kad je unisten veliki asteroid, ima 5% sanse da dropa srce 
-                    heart = Heart('Animacije\HeartPowerUp.png',self.rect[0],self.rect[1])
+                    heart = Heart('Animacije/HeartPowerUp.png',self.rect[0],self.rect[1])
                     all_sprites.add(heart)
                     hearts.add(heart)
                 UpdateScore(25)
@@ -205,7 +205,7 @@ def main_menu():
         Player2_text.Display()
         
         space_img = pygame.image.load('Menu_icons/space_w.png') #Slika rakete
-        x_icon = pygame.image.load('Menu_icons/x_icon.png') #Slika iksića
+        x_icon = pygame.image.load('Menu_icons/x_icon.png') #Slika iksica
         screen.blit(x_icon, (width*0.02, height*0.02))
         screen.blit(space_img, (width*0.429, height*0.4))
 
@@ -333,14 +333,6 @@ def PlayerOneGameLoop():
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
     pygame.mixer.music.play(-1)
-<<<<<<< HEAD
-    
-    Score[0] = 0            #ocisti score na pocetku igre, tako da kad ides na play again score ne nastavlja iz prosle igre nego je opet na nula
-    asteroidi.clear()       #ocisti asteroidi na pocetku igre, kad ides na play again svi asteroidi se obrisu i ponovno kreiraju
-    Pew_Pew.clear()         #isto kao za asteroide ali za pewpew
-
-=======
->>>>>>> ed7c48230d1e16111b6aa0333c32d3cc8a90bfbc
 
     
 
@@ -406,11 +398,7 @@ def PlayerOneGameLoop():
             value = pygame.mixer.music.get_volume() + 0.01  
             pygame.mixer.music.set_volume(value)
 
-<<<<<<< HEAD
-        letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                    
-=======
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
->>>>>>> ed7c48230d1e16111b6aa0333c32d3cc8a90bfbc
         
         #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
         #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
@@ -418,12 +406,7 @@ def PlayerOneGameLoop():
         #Mehanizam za meteore
         Asteroidi.LoadAsteroidi(count)
         #Provjeri ako ima asteroida i onda zovi funkciju da ih crtas
-<<<<<<< HEAD
-        Asteroidi.CheckAsteroid(count)
-        screen.blit(letjelica.img_path,(letjelica.rect[0],letjelica.rect[1]))
-=======
         Asteroidi.CheckAsteroid(count)                            
->>>>>>> ed7c48230d1e16111b6aa0333c32d3cc8a90bfbc
         #screen.blit(heart.img, (heart.rect[0], heart.rect[1]))
         #screen.blit(letjelica.img_path, (letjelica.position[0], letjelica.position[1]))      
         pygame.display.update()
