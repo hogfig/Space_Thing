@@ -384,16 +384,6 @@ def PlayerOneGameLoop():
     pygame.mixer.music.set_volume(0.05)
     pygame.mixer.music.play(-1)
 
-
-    # small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
-    # all_sprites.add(small_asteroid)
-    # asteroids.add(small_asteroid)
-    # small_asteroid1 = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
-    # all_sprites.add(small_asteroid1)
-    # asteroids.add(small_asteroid1)
-    # small_asteroid2 = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
-    # all_sprites.add(small_asteroid2)
-    # asteroids.add(small_asteroid2)
     
 
     while game_running:
@@ -456,9 +446,12 @@ def PlayerOneGameLoop():
             letjelica.health -= 1
 
         pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, True, pygame.sprite.collide_circle)
-        if pewpew_Hits:
+        for hit in pewpew_Hits:
+            if random.random() > 0.95:
+                heart = Heart('Animacije/HeartPowerUp.png', hit.rect[0], hit.rect[1])
+                all_sprites.add(heart)
+                hearts.add(heart)
             UpdateScore(10)
-        #pewpewHits = pygame.sprite.spritecollide(sprite, group, dokill, collided = None)
         
         
         #FADE IN VOLUME
