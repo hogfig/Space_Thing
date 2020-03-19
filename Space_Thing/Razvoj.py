@@ -93,6 +93,7 @@ class Asteroid(pygame.sprite.Sprite):
 def LoadAsteroidi(count): 
         oduzmi_small = 1
         oduzmi_medium = 1
+
         if Score[0]>200:
             oduzmi_small = 5
             oduzmi_medium = 50
@@ -102,7 +103,10 @@ def LoadAsteroidi(count):
         elif Score[0] > 1300:
             oduzmi_small = 20
             oduzmi_medium = 100
-
+        
+        # time = pygame.time.get_ticks() / 1000
+        # print(time)
+        
         if count % (fps/2 - oduzmi_small) == 0:
             small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
             all_sprites.add(small_asteroid)
@@ -324,7 +328,7 @@ def PlayerOneGameLoop():
     count = 0 #brojac koji se koristi u while loopu
     Srce_gore = pygame.image.load('Animacije/HeartUp.png')
     Srce_dolje = pygame.image.load('Animacije/HeartDown.png')
-    
+
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica('Letjelice/letjelica_0.png', width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
