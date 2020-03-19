@@ -37,7 +37,6 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load('Bullets/bullet.png')
-        #self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         # bullet position is according the player position
         self.rect.centerx = x
@@ -75,43 +74,22 @@ class Asteroid(pygame.sprite.Sprite):
         self.speed = random.randrange(2,5)                                  #i random brzina kojom asteroid pada
 
     def update(self):
-        self.rect.y += self.speed
-        if self.rect.top > height:
-            self.kill()
+        if self.health > 0:
+            self.rect.y += self.speed
+            if self.rect.top > height:
+                self.kill()
+        else:
+            self.kill() 
+            if self.size == "small":
+                UpdateScore(10)
+            else:
+                UpdateScore(25) 
+            if random.random() > 0.98:
+                heart = Heart('Animacije/HeartPowerUp.png', self.rect[0], self.rect[1])
+                all_sprites.add(heart)
+                hearts.add(heart)
 
-
-    # def To_screen(self,count, i):
-    #     if self.health != 0:
-    #         self.rect[1] += asteroid_speed
-    #         screen.blit(self.img,(self.rect[0],self.rect[1]))
-    #     else:
-    #         if self.size == 'small':
-    #             asteroidi.remove(i)
-    #             if random.randrange(0, 100) > 98:                                                  #svaki put kad je unisten mali asteroid,ima 2% sansa da dropa srce
-    #                 heart = Heart('Animacije\HeartPowerUp.png',self.rect[0],self.rect[1])
-    #                 all_sprites.add(heart)
-    #                 hearts.add(heart)
-    #             UpdateScore(10)
-    #         else:
-    #             asteroidi.remove(i)
-    #             if random.randrange(0, 100) > 95:                                                  #svaki put kad je unisten veliki asteroid, ima 5% sanse da dropa srce 
-    #                 heart = Heart('Animacije\HeartPowerUp.png',self.rect[0],self.rect[1])
-    #                 all_sprites.add(heart)
-    #                 hearts.add(heart)
-    #             UpdateScore(25)
-
-
-    # #puni listu meteori s objektima Meteori 
-    
-
-    # def CheckAsteroid(count):
-    #     if len(asteroidi) > 0:
-    #         for i in asteroidi:
-    #             i.To_screen(count, i) 
-       
-#Klasa koja sluzi za obradu i prikaz teksta na ekran   
-
-#Crta asteroide na ekran
+#Algoritam za kreaciju asteroida
 def LoadAsteroidi(count): 
         oduzmi_small = 1
         oduzmi_medium = 1
@@ -130,9 +108,9 @@ def LoadAsteroidi(count):
             all_sprites.add(small_asteroid)
             asteroids.add(small_asteroid)
         elif count % (201-oduzmi_medium) == 0:
-            small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
-            all_sprites.add(small_asteroid)
-            asteroids.add(small_asteroid)
+            medium_asteroid = Asteroid('Asteroidi/medasteroid.png', 3, "medium")
+            all_sprites.add(medium_asteroid)
+            asteroids.add(medium_asteroid)
 
 class Message_to_screen():
 
@@ -179,28 +157,6 @@ class Letjelica(pygame.sprite.Sprite):
             all_sprites.add(bullet)
             bullets.add(bullet)
 
-
-    # def pew_pew(self):
-    #     x = self.rect[0] + 28
-    #     y = self.rect[1] - 5
-    #     size = 3
-    #     pew = pygame.Rect(x,y,size,size)
-    #     Pew_Pew.append(pew)
-
-    # def LoadPewPew(): # za pucanje metaka, kada je u dodiru sa asteroidom obrisi metak i skini HP asteroidu
-    #     if len(Pew_Pew) > 0:
-    #         for pew in Pew_Pew :
-    #             if len(asteroidi) > 0:
-    #                 for i in asteroidi:
-    #                     if pew.colliderect(i.rect):
-    #                         Pew_Pew.remove(pew)
-    #                         i.health -= 1
- 
-    #             if pew[1] > 0:
-    #                 pew[1] -= 10
-    #                 pygame.draw.rect(screen,orange,pew)
-    #             elif pew[1] < 0:
-    #                 Pew_Pew.remove(pew)
                 
 def init_Stars():
     for i in range(0, 49): 
@@ -440,13 +396,14 @@ def PlayerOneGameLoop():
             pygame.mixer.Sound.play(crash_sound)
             letjelica.health -= 1
 
-        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, True, pygame.sprite.collide_circle)
+        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)
         for hit in pewpew_Hits:
-            if random.random() > 0.95:
-                heart = Heart('Animacije/HeartPowerUp.png', hit.rect[0], hit.rect[1])
-                all_sprites.add(heart)
-                hearts.add(heart)
-            UpdateScore(10)
+            hit.health -= 1
+            # if random.random() > 0.95:
+            #     heart = Heart('Animacije/HeartPowerUp.png', hit.rect[0], hit.rect[1])
+            #     all_sprites.add(heart)
+            #     hearts.add(heart)
+            # UpdateScore(10)
         
         
         #FADE IN VOLUME
@@ -456,15 +413,7 @@ def PlayerOneGameLoop():
 
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
         
-        #Mehanizam za pucanje, crta metak dok je god u okvirima ekrana, kad izade
-        #presane crtat i mice metak iz arraya. Ako se sudari sa meteorom isto tako.
-        #Letjelica.LoadPewPew()
-        #Mehanizam za meteore
-        #Asteroidi.LoadAsteroidi(count)
-        #Provjeri ako ima asteroida i onda zovi funkciju da ih crtas
-        #Asteroidi.CheckAsteroid(count)                            
-        #screen.blit(heart.img, (heart.rect[0], heart.rect[1]))
-        #screen.blit(letjelica.img_path, (letjelica.position[0], letjelica.position[1]))      
+        
         pygame.display.update()
         
         clock.tick(fps)
@@ -474,6 +423,8 @@ def PlayerOneGameLoop():
     quit()
     
     
+
+
 def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
     game_running = True
 
