@@ -375,9 +375,9 @@ def PlayerOneGameLoop():
                 if event.key == pygame.K_q:
                     game_running = False
                 if event.key == pygame.K_ESCAPE:
-                    letjelica.kill()
-                    for i in asteroids:
-                        i.kill()
+                    letjelica.kill()                       #makne letjelicu kad ides na main menu
+                    for asteroid in asteroids:             #makne sve asteride kad se vracas na main menu
+                        asteroid.kill()
                     main_menu()
                 if event.key == pygame.K_SPACE:
                     letjelica.shoot()
