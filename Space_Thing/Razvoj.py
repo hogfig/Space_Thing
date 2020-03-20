@@ -71,7 +71,8 @@ class Asteroid(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, width - self.rect.width)          #pri kreiranju asteroida bira se random x koordinata
         self.rect.y = random.randrange(-100, -50)
-        self.speed = random.randrange(2,5)                                  #i random brzina kojom asteroid pada
+        self.speed = random.randrange(2,5)      
+        
 
     def update(self):
         if self.health > 0:
@@ -282,6 +283,7 @@ def GameOver(score):
     pygame.mixer.music.load('Pjesme/SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)
+
     
     while game_over_running == True:
         screen.fill(black)
@@ -373,6 +375,9 @@ def PlayerOneGameLoop():
                 if event.key == pygame.K_q:
                     game_running = False
                 if event.key == pygame.K_ESCAPE:
+                    letjelica.kill()
+                    for i in asteroids:
+                        i.kill()
                     main_menu()
                 if event.key == pygame.K_SPACE:
                     letjelica.shoot()
