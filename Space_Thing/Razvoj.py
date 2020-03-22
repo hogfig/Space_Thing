@@ -18,6 +18,7 @@ asteroid_speed = 3
 meteor_num = 200
 screen_rect = screen.get_rect()
 d  = shelve.open('SaveFiles/highscore.txt')
+help = 0
 
 
 asteroid_images  = []    #slike razlicitih asteroida, random se bira jedna kad se kreira asteroid
@@ -107,7 +108,6 @@ def LoadAsteroidi(count):
         
         # time = pygame.time.get_ticks() / 1000
         # print(time)
-        
         if count % (fps/2 - oduzmi_small) == 0:
             small_asteroid = Asteroid('Asteroidi/Asteroid1.png', 1, "small")
             all_sprites.add(small_asteroid)
@@ -116,6 +116,24 @@ def LoadAsteroidi(count):
             medium_asteroid = Asteroid('Asteroidi/medasteroid.png', 3, "medium")
             all_sprites.add(medium_asteroid)
             asteroids.add(medium_asteroid)
+
+def phase1(count):
+    LoadAsteroidi(count)
+
+counter = 0
+def phase2(count):
+    global help
+    global counter
+    if counter < 250:
+        S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 2')
+        S.Display()
+        counter += 1
+    else:
+        LoadAsteroidi(count)
+        
+
+
+
 
 class Message_to_screen():
 
@@ -330,12 +348,13 @@ def PlayerOneGameLoop():
     count = 0 #brojac koji se koristi u while loopu
     Srce_gore = pygame.image.load('Animacije/HeartUp.png')
     Srce_dolje = pygame.image.load('Animacije/HeartDown.png')
-
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica('Letjelice/letjelica_0.png', width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
     Score.append(0) 
     Score[0] = 0
+    for asteroid in asteroids:
+        asteroid.kill()
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
@@ -353,7 +372,7 @@ def PlayerOneGameLoop():
 
         if letjelica.health == 0:
             letjelica.kill()
-            if Score[0] > d['highscore']:
+            if Score[0] > d['highscore']:     #saves the new score if its bigger than the all time high score
                 d['highscore'] = Score[0]
             pygame.mixer.music.stop()
             GameOver(Score[0])
@@ -375,9 +394,7 @@ def PlayerOneGameLoop():
                 if event.key == pygame.K_q:
                     game_running = False
                 if event.key == pygame.K_ESCAPE:
-                    letjelica.kill()                       #makne letjelicu kad ides na main menu
-                    for asteroid in asteroids:             #makne sve asteride kad se vracas na main menu
-                        asteroid.kill()
+                    letjelica.kill()
                     main_menu()
                 if event.key == pygame.K_SPACE:
                     letjelica.shoot()
@@ -391,11 +408,20 @@ def PlayerOneGameLoop():
         if pressed[pygame.K_RIGHT]:
             letjelica.rect.x += 5   
         
-        LoadAsteroidi(count) # Nacrtaj asteroide na ekran
+        if(Score[0] < 1000):
+            phase1(count)
+        else:
+            phase2(count * 10)
 
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
         
+
+        if count % 50 == 0:             #povecava score otprilike scaku sekundu za 10
+            Score[0] += 10
+
+
+
         heartHits = pygame.sprite.spritecollide(letjelica, hearts, True)
         if heartHits:
             letjelica.health += 1
