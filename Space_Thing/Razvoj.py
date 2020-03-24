@@ -423,7 +423,7 @@ def PlayerOneGameLoop():
         if(Score[0] < 1000):
             phase1(count)
         else:
-            phase2(count * 10)
+            phase2(count * 5)
 
         letjelica.image , letjelica_frame = AnimateLetjelica(count, letjelica, letjelica_frame)
         
