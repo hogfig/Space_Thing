@@ -18,7 +18,7 @@ asteroid_speed = 3
 meteor_num = 200
 screen_rect = screen.get_rect()
 d  = shelve.open('SaveFiles/highscore.txt')
-help = 0
+
 
 
 asteroid_images  = []    #slike razlicitih asteroida, random se bira jedna kad se kreira asteroid
@@ -37,7 +37,7 @@ asteroids = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, player):
         super().__init__()
         self.image = pygame.image.load('Bullets/bullet.png')
         self.rect = self.image.get_rect()
@@ -45,12 +45,13 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.centerx = x
         self.rect.bottom = y
         self.speedy = -15
+        self.player = player
  
     def update(self):
         self.rect.y += self.speedy
  
         # if bullet goes off top of window, destroy it
-        if self.rect.bottom < 35:
+        if self.rect.bottom < 0:
             self.kill()
 
 class Heart(pygame.sprite.Sprite):
@@ -75,7 +76,7 @@ class Asteroid(pygame.sprite.Sprite):
         self.rect.x = random.randrange(0, width - self.rect.width)          #pri kreiranju asteroida bira se random x koordinata
         self.rect.y = random.randrange(-100, -50)
         self.speed = random.randrange(2,5)      
-        
+        self.hit_by_player = 'player1'
 
     def update(self):
         if self.health > 0:
@@ -85,9 +86,15 @@ class Asteroid(pygame.sprite.Sprite):
         else:
             self.kill() 
             if self.size == "small":
-                UpdateScore(10)
+                if self.hit_by_player == 'player1':
+                    UpdateScore(10)
+                else:
+                    UpdateScore2(10)
             else:
-                UpdateScore(25) 
+                if self.hit_by_player == 'player1':
+                    UpdateScore(25)
+                else:
+                    UpdateScore2(25) 
             if random.random() > 0.98:
                 heart = Heart('Animacije/HeartPowerUp.png', self.rect[0], self.rect[1])
                 all_sprites.add(heart)
@@ -164,21 +171,27 @@ class Letjelica(pygame.sprite.Sprite):
 
         self.width = 49
         self.height = 55
-        self.speed = 0
+        self.speedx = 0
+        self.speedy = 0
         self.shoot_delay = 100
         self.last_shot = pygame.time.get_ticks()
 
-        
+    
 
     def update(self):
-         self.rect.x += self.speed
-         self.rect.y += self.speed
+        if self.health > 0:
+            self.rect.x += self.speedx
+            self.rect.y += self.speedy
+        self.speedx = 0
+        self.speedy = 0
+
     
-    def shoot(self):
+    
+    def shoot(self, player = 'player1'):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot > self.shoot_delay:
             self.last_shot = current_time
-            bullet = Bullet(self.rect.centerx, self.rect.top)
+            bullet = Bullet(self.rect.centerx, self.rect.top, player)
             all_sprites.add(bullet)
             bullets.add(bullet)
 
@@ -190,13 +203,16 @@ def init_Stars():
         Stars.append([x,y])
 
 def init_Meteori():
-    for m in range(meteor_num): # dodjeljujes random koordinate za meteore i spremas ih u array  
+    for m in range(meteor_num):          # dodjeljujes random koordinate za meteore i spremas ih u array  
         x = random.randrange(0, width)
         y = random.randrange(0, height)
         Meteors.append([x,y])
 
 def UpdateScore(num):
     Score[0] += num
+
+def UpdateScore2(num):
+    Score[1] += num
 
 def DisplayLife(count, HP, Srce_gore, Srce_dolje, x_kord,y):
     offset = 20
@@ -412,13 +428,13 @@ def PlayerOneGameLoop():
                     letjelica.shoot()
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_UP]:
-            letjelica.rect.y -= 5
+            letjelica.speedy -= 5
         if pressed[pygame.K_DOWN]:
-            letjelica.rect.y += 5
+            letjelica.speedy += 5
         if pressed[pygame.K_LEFT]:
-            letjelica.rect.x -= 5
+            letjelica.speedx -= 5
         if pressed[pygame.K_RIGHT]:
-            letjelica.rect.x += 5   
+            letjelica.speedx += 5   
         
         if(Score[0] < 1000):
             phase1(count)
@@ -449,11 +465,7 @@ def PlayerOneGameLoop():
         pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)
         for hit in pewpew_Hits:
             hit.health -= 1
-            # if random.random() > 0.95:
-            #     heart = Heart('Animacije/HeartPowerUp.png', hit.rect[0], hit.rect[1])
-            #     all_sprites.add(heart)
-            #     hearts.add(heart)
-            # UpdateScore(10)
+            
         
         
         #FADE IN VOLUME
@@ -472,7 +484,53 @@ def PlayerOneGameLoop():
     pygame.quit()
     quit()
     
-    
+def GameOver2(score1, score2):
+    game_over_running = True
+    pygame.mixer.music.load('Pjesme/SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)
+
+    while game_over_running == True:
+        screen.fill(black)
+        GameOverMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',50), (255,255,255), [width/2, height*0.3], 'GAME OVER')
+        GameOverMessage.Display()
+        GameOverScore1 = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width*0.2), height*0.4], 'PLAYER1      SCORE    ' + str(score1))
+        GameOverScore1.Display()
+        GameOverScore2 = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width*0.8), height*0.4], 'PLAYER2      SCORE    ' + str(score2))
+        GameOverScore2.Display()
+        HighscoreMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',35), (255,255,255), [width/2, height*0.6], 'ALL TIME     HIGHSCORE')
+        HighscoreMessage.Display()
+        HighscoreNumba = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [(width/2), height*0.7], str(d['highscore']))
+        HighscoreNumba.Display()
+        PlayAgainMessage = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',50), (255,255,255), [width/2, height*0.85], 'PLAY    AGAIN')
+        PlayAgainMessage.Display()
+        
+        if PlayAgainMessage.rect.collidepoint(pygame.mouse.get_pos()): #ako je mis iznad teksta helping hand napravi 3D kurac
+            PlayAgainMessage.font = pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',60)
+            PlayAgainMessage.color = (239, 90, 150)
+            PlayAgainMessage_3D = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',55), (58,255,249), [width/2, height*0.85], 'PLAY    AGAIN')
+            PlayAgainMessage_3D.Display()
+            PlayAgainMessage.Display()
+
+        pygame.display.update()                     
+        clock.tick(fps)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: #ako kliknes na x prozora ugasi igricu
+                game_over_running = False
+            if event.type == pygame.KEYDOWN: #ako kliknes q dok se vrti igrica izadi iz igrice
+                if event.key == pygame.K_q:
+                    game_over_running = False
+                if event.key == pygame.K_ESCAPE:
+                    main_menu()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and PlayAgainMessage.rect.collidepoint(pygame.mouse.get_pos()):
+                game_over_running = False
+                pygame.mixer.music.stop()
+                PlayerTwoGameLoop()
+    pygame.quit()
+    quit()
+
 
 
 def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
@@ -480,10 +538,12 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
     count = 0 #brojac koji se koristi u while loopu
     Srce_gore = pygame.image.load('Animacije/HeartUp.png')
     Srce_dolje = pygame.image.load('Animacije/HeartDown.png')
-
+    for asteroid in asteroids:
+        asteroid.kill()
     Score.append(0) 
-    Socore_player2.append(0)
-   # Score[0] = 0
+    Score.append(0)
+    Score[0] = 0
+    Score[1] = 0
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
@@ -497,19 +557,30 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
     while game_running:
         screen.fill(black)
         S_1 = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,0,0), [65, 20], 'PLAYER 1    ' + str(Score[0]))
-        S_2 = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (0,255,0), [820, 20], 'PLAYER 2   ' + str(Socore_player2[0]))
+        S_2 = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (0,255,0), [820, 20], 'PLAYER 2   ' + str(Score[1]))
         
         S_1.Display() 
         S_2.Display()
         DisplayLife(count, letjelica1.health, Srce_gore, Srce_dolje, 65, 30)
         DisplayLife(count, letjelica2.health, Srce_gore, Srce_dolje, width-100, 30)
 
-        
-        if letjelica2.health == 0 or letjelica1.health == 0:
+
+
+        if letjelica1.health == 0:
             letjelica1.kill()
+            letjelica1.rect.x = width + 50     #makne letjelicu off screen, inace nestane slika letjelice ali njezin rect je josuvijek na ekranu i zabija se u asteroide
+
+        if letjelica2.health == 0:
             letjelica2.kill()
+            letjelica2.rect.x = width + 50    #makne letjelicu off screen, inace nestane slika letjelice ali njezin rect je josuvijek na ekranu i zabija se u asteroide
+        
+        if letjelica1.health <= 0 and letjelica2.health <= 0:    #ako su obje letjelice mrtve onda je game over
+            if Score[0] > d['highscore']:     #saves the new score if its bigger than the all time high score
+                d['highscore'] = Score[0]
+            if Score[1] > d['highscore']:     #saves the new score if its bigger than the all time high score
+                d['highscore'] = Score[1]
             pygame.mixer.music.stop()
-            GameOver(Score[0])
+            GameOver2(Score[0], Score[1])
             
 
         #Blok za crtanje background zvezda
@@ -528,28 +599,32 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
                 if event.key == pygame.K_q:
                     game_running = False
                 if event.key == pygame.K_ESCAPE:
+                    letjelica1.kill()
+                    letjelica2.kill()
                     main_menu()
                 if event.key == pygame.K_SPACE:
-                    letjelica2.shoot()
+                    if letjelica2.health > 0:
+                        letjelica2.shoot('player2')
                 if event.key == pygame.K_RETURN:
-                    letjelica1.shoot()
+                    if letjelica1.health > 0:
+                        letjelica1.shoot('player1')
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_UP]:
-            letjelica1.rect.y -= 5
+            letjelica1.speedy -= 5
         if pressed[pygame.K_DOWN]:
-            letjelica1.rect.y += 5
+            letjelica1.speedy += 5
         if pressed[pygame.K_LEFT]:
-            letjelica1.rect.x -= 5
+            letjelica1.speedx -= 5
         if pressed[pygame.K_RIGHT]:
-            letjelica1.rect.x += 5
+            letjelica1.speedx += 5
         if pressed[pygame.K_w]:
-            letjelica2.rect.y -= 5
+            letjelica2.speedy -= 5
         if pressed[pygame.K_s]:
-            letjelica2.rect.y += 5
+            letjelica2.speedy += 5
         if pressed[pygame.K_a]:
-            letjelica2.rect.x -= 5
+            letjelica2.speedx -= 5
         if pressed[pygame.K_d]:
-            letjelica2.rect.x += 5 
+            letjelica2.speedx += 5 
 
         LoadAsteroidi(count) #Nacrtaj asteroide na ekran
 
@@ -574,9 +649,13 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
             pygame.mixer.Sound.play(crash_sound)
             letjelica2.health -= 1
 
-        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)
-        for hit in pewpew_Hits:
-            hit.health -= 1
+        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, True)
+        for asteroid, bullet in pewpew_Hits.items():
+            asteroid.health -= 1
+            asteroid.hit_by_player = bullet[0].player
+        
+
+        
 
         letjelica1.rect.clamp_ip(screen_rect)
         letjelica2.rect.clamp_ip(screen_rect)  
