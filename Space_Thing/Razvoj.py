@@ -5,6 +5,7 @@ import random
 import time
 import shelve 
 
+# VARIJABLE VEZANE ZA SCREEN
 white=(255,255,255)
 orange = (255,162,0)
 black=(0,0,0)
@@ -12,15 +13,18 @@ size=width,height= 920,640
 screen=pygame.display.set_mode(size)
 clock= pygame.time.Clock()
 fps= 60
+screen_rect = screen.get_rect()
+
+#CONSTANTE  
 meteor_speed = 5
 meteor_size = 1
 asteroid_speed = 3
 meteor_num = 200
-screen_rect = screen.get_rect()
+
+#VARIJABLE ZA EXTERNAL FILES
 d  = shelve.open('SaveFiles/highscore.txt')
 
-
-
+#LISTE ZA MEHANIKU IGRE
 asteroid_images  = []    #slike razlicitih asteroida, random se bira jedna kad se kreira asteroid
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
@@ -28,9 +32,14 @@ Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
 Score = [] # lista za pracenje rezultata
 Socore_player2 = [] #lista za pracenje rezultata drugog igraca
+
+#LISTE ZA ANIMACIJU
 LetjeliceAnimacija = [pygame.image.load('Letjelice/letjelica_0.png'),pygame.image.load('Letjelice/letjelica_1.png'),pygame.image.load('Letjelice/letjelica_2.png')]
+
+#RAZNI INDEXI
 index = [0]
 
+#INICIJALIZACIJA SPRITEOVA
 all_sprites = pygame.sprite.Group()
 hearts = pygame.sprite.Group()
 asteroids = pygame.sprite.Group()
@@ -159,17 +168,14 @@ class Phases():
             self.povecaj_srednji = 60   
             self.LoadAsteroidi(count)
         
-def init_Phases(count):
+def init_Phases(count,p):
     
-    if(Score[0] < 1000):
-        p=Phases(count)
+    if(Score[0] < 1000 and Score[1]<1000):
         p.phase_0(count)
-    elif(Score[0]>=1000 and Score[0]<2000):
-        p1=Phases(count)
-        p1.phase_1(count)
+    elif(Score[0]>=1000 and Score[0]<2000 or Score[1]>=1000 and Score[1]>=2000):
+        p.phase_1(count)
     else:
-        p2=Phases(count)
-        p2.phase_2(count)
+        p.phase_2(count)
 
 
 class Message_to_screen():
@@ -407,8 +413,9 @@ def PlayerOneGameLoop():
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica(pygame.image.load('Letjelice/letjelica_0.png'), width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
-    Score.append(0) 
-    Score[0] = 0
+    Score.append(0) # Score[0]=0
+    Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
+    p = Phases(count)
     for asteroid in asteroids:
         asteroid.kill()
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
@@ -424,15 +431,12 @@ def PlayerOneGameLoop():
         S.Display() 
         DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje,width - 20, 10)
         
-        
-
         if letjelica.health == 0:
             letjelica.kill()
             if Score[0] > d['highscore']:     #saves the new score if its bigger than the all time high score
                 d['highscore'] = Score[0]
             pygame.mixer.music.stop()
             GameOver(Score[0])
-
 
         #Blok za crtanje background zvezda
         for i in Stars:
@@ -464,19 +468,15 @@ def PlayerOneGameLoop():
         if pressed[pygame.K_RIGHT]:
             letjelica.speedx += 5   
         
-        init_Phases(count)
+        init_Phases(count,p)
 
         letjelica.image , letjelica_frame = AnimateLetjelica(count, letjelica, letjelica_frame)
         
-
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
         
-
         if count % 50 == 0:             #povecava score otprilike scaku sekundu za 10
             Score[0] += 10
-
-
 
         heartHits = pygame.sprite.spritecollide(letjelica, hearts, True)
         if heartHits:
@@ -491,16 +491,13 @@ def PlayerOneGameLoop():
         for hit in pewpew_Hits:
             hit.health -= 1
             
-        
-        
         #FADE IN VOLUME
         if pygame.mixer.music.get_volume() < 0.4:
             value = pygame.mixer.music.get_volume() + 0.01  
             pygame.mixer.music.set_volume(value)
 
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
-        
-        
+              
         pygame.display.update()
         
         clock.tick(fps)
@@ -569,6 +566,9 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
     Score.append(0)
     Score[0] = 0
     Score[1] = 0
+
+    p = Phases(count) #instanca objekta koja je potrebna za razvoj levela (faza)
+
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
@@ -651,7 +651,7 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         if pressed[pygame.K_d]:
             letjelica2.speedx += 5 
 
-        LoadAsteroidi(count) #Nacrtaj asteroide na ekran
+        init_Phases(count, p) #Nacrtaj asteroide na ekran tako da inicijaliziras faze
 
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
