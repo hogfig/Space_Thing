@@ -35,9 +35,11 @@ Socore_player2 = [] #lista za pracenje rezultata drugog igraca
 
 #LISTE ZA ANIMACIJU
 LetjeliceAnimacija = [pygame.image.load('Letjelice/letjelica_0.png'),pygame.image.load('Letjelice/letjelica_1.png'),pygame.image.load('Letjelice/letjelica_2.png')]
-
+PowerUpAnimacija = [pygame.image.load('Animacije/red_box_0.png'),pygame.image.load('Animacije/red_box_1.png'),pygame.image.load('Animacije/green_box_0.png'),pygame.image.load('Animacije/green_box_1.png'),
+                    pygame.image.load('Animacije/blue_box_0.png'),pygame.image.load('Animacije/blue_box_1.png'),pygame.image.load('Animacije/purple_box_0.png'),pygame.image.load('Animacije/purple_box_1.png')]
 #RAZNI INDEXI
 index = [0]
+counter = 0
 
 #INICIJALIZACIJA SPRITEOVA
 all_sprites = pygame.sprite.Group()
@@ -55,6 +57,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.bottom = y
         self.speedy = -15
         self.player = player
+        self.dmg = 1
  
     def update(self):
         self.rect.y += self.speedy
@@ -109,7 +112,6 @@ class Asteroid(pygame.sprite.Sprite):
                 all_sprites.add(heart)
                 hearts.add(heart)
 
-counter = 0
 class Phases():
     def __init__(self,count):
         self.povecaj_mali = 1
@@ -219,7 +221,6 @@ class Letjelica(pygame.sprite.Sprite):
         self.speedx = 0
         self.speedy = 0
 
-    
     
     def shoot(self, player = 'player1'):
         current_time = pygame.time.get_ticks()
@@ -474,7 +475,7 @@ def PlayerOneGameLoop():
         
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
-        
+
         if count % 50 == 0:             #povecava score otprilike scaku sekundu za 10
             Score[0] += 10
 
@@ -487,9 +488,10 @@ def PlayerOneGameLoop():
             pygame.mixer.Sound.play(crash_sound)
             letjelica.health -= 1
 
-        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)
-        for hit in pewpew_Hits:
-            hit.health -= 1
+        
+        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
+        for asteroid,pew in pewpew_Hits.items():
+            asteroid.health -= pew[0].dmg
             
         #FADE IN VOLUME
         if pygame.mixer.music.get_volume() < 0.4:
@@ -679,9 +681,6 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
             asteroid.health -= 1
             asteroid.hit_by_player = bullet[0].player
         
-
-        
-
         letjelica1.rect.clamp_ip(screen_rect)
         letjelica2.rect.clamp_ip(screen_rect)  
 
