@@ -40,24 +40,58 @@ PowerUpAnimacija = [pygame.image.load('Animacije/red_box_0.png'),pygame.image.lo
 #RAZNI INDEXI
 index = [0]
 counter = 0
+unutarnji_brojac_powerup = 0
+dovrsen_powerup = 0
 
 #INICIJALIZACIJA SPRITEOVA
 all_sprites = pygame.sprite.Group()
+players = pygame.sprite.Group()
 hearts = pygame.sprite.Group()
 asteroids = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
+power_ups = pygame.sprite.Group()
+
+class PowerUps(pygame.sprite.Sprite):
+    def __init__(self,img,chosen_box,x,y):
+        super().__init__()
+        self.image = img
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = 2
+        self.chosen_box = chosen_box #sluzi za indentifikaciju boje kutije koja je odabrana
+    
+    def update(self):
+        global height
+        if self.rect.y < height/2:
+            self.rect.y += self.speed
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, player):
         super().__init__()
-        self.image = pygame.image.load('Bullets/bullet.png')
+        if players.sprites()[0].chosen_powerup == -1:
+            self.image = pygame.image.load('Bullets/bullet.png')
+            self.dmg = 1
+        elif players.sprites()[0].chosen_powerup == 0:
+            self.image = pygame.image.load('Bullets/bullet_tower.png')
+            self.dmg = 5
+        elif players.sprites()[0].chosen_powerup == 1:
+             self.image = pygame.image.load('Bullets/bullet_snake0.png')
+             self.dmg = 2
+        elif players.sprites()[0].chosen_powerup == 2:
+            self.image = pygame.image.load('Bullets/bullet_greenbox_0_0.png')
+            self.dmg = 3
+        elif players.sprites()[0].chosen_powerup == 3:
+            self.image = pygame.image.load('Bullets/bullet_purple_box.png')
+            self.dmg = 3
+
         self.rect = self.image.get_rect()
         # bullet position is according the player position
         self.rect.centerx = x
         self.rect.bottom = y
         self.speedy = -15
         self.player = player
-        self.dmg = 1
  
     def update(self):
         self.rect.y += self.speedy
@@ -74,7 +108,7 @@ class Heart(pygame.sprite.Sprite):
         self.rect.center = (x,y)
     
     def update(self):             #srce pada i ako izade iz ekrana se obrise
-        self.rect.y += 1.7
+        self.rect.y += 2
         if self.rect.top > height:
             self.kill()
 
@@ -169,16 +203,92 @@ class Phases():
             self.povecaj_mali = 20
             self.povecaj_srednji = 60   
             self.LoadAsteroidi(count)
-        
-def init_Phases(count,p):
     
+    def phase_2_1(self,count):
+        global counter,dovrsen_powerup,unutarnji_brojac_powerup
+        if(counter <= 935):
+            S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'CHOOSE  WISELY')
+            S.Display()     
+            counter+=1
+        else:    
+            init_PowerUps()
+
+            #animiraj kutije
+            AnimatePowerUps(count)
+
+            #provjeri ako se desava kolizija izmedu letjelice i powerups
+            check_collide = pygame.sprite.groupcollide(players,power_ups,False,True)      
+            if check_collide:
+                for letjelica, power_up in check_collide.items():                     
+                    letjelica.chosen_powerup = power_up[0].chosen_box
+                all_sprites.remove(power_ups)
+                power_ups.empty()
+                unutarnji_brojac_powerup +=1
+                dovrsen_powerup += 1
+                
+    
+    def phase_3(self,count):
+        global counter
+        if(counter <= 1000):
+            S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 3')
+            S.Display()     
+            counter+=1
+        else:     
+            self.povecaj_mali = 25
+            self.povecaj_srednji = 62   
+            self.LoadAsteroidi(count)
+
+
+def init_PowerUps():
+    global unutarnji_brojac_powerup
+
+    if unutarnji_brojac_powerup<1 :
+        crvena_kutija = PowerUps(PowerUpAnimacija[0],0,300,0)
+        zelena_kutija = PowerUps(PowerUpAnimacija[2],1,400,0)
+        plava_kutija = PowerUps(PowerUpAnimacija[4],2,500,0)
+        ljubicasta_kutija = PowerUps(PowerUpAnimacija[6],3,600,0)
+
+        all_sprites.add(crvena_kutija,zelena_kutija,plava_kutija,ljubicasta_kutija)
+        power_ups.add(crvena_kutija,zelena_kutija,plava_kutija,ljubicasta_kutija)
+        unutarnji_brojac_powerup +=1
+
+
+
+def  AnimatePowerUps(count):
+    #svake pola sekunde se izmjenjuje frame, frameovi su pohranjeni u listi PowerUpAnimacije, a objekti (svaka kutija) se dohvaca pomocu
+    #grupa spriteova
+    for i in power_ups.sprites():
+        if count%(fps) < 30:
+            if i.chosen_box == 0:
+                i.image = PowerUpAnimacija[1]  #crvena
+            if i.chosen_box == 1:
+                i.image = PowerUpAnimacija[2] #zelena
+            if i.chosen_box == 2:
+                i.image = PowerUpAnimacija[4] #plava
+            if i.chosen_box == 3:
+                i.image = PowerUpAnimacija[6] #ljubicasta
+        else:
+            if i.chosen_box == 0:
+                i.image = PowerUpAnimacija[0] #crvena
+            if i.chosen_box == 1:    
+                i.image = PowerUpAnimacija[3] #zelena
+            if i.chosen_box == 2:
+                i.image = PowerUpAnimacija[5] #plava
+            if i.chosen_box == 3:
+                i.image = PowerUpAnimacija[7] #ljubicasta
+
+def init_Phases(count,p):
+    global dovrsen_powerup 
     if(Score[0] < 1000 and Score[1]<1000):
         p.phase_0(count)
-    elif(Score[0]>=1000 and Score[0]<2000 or Score[1]>=1000 and Score[1]>=2000):
+    elif(Score[0]>=1000 and Score[0]<2000 or Score[1]>=1000 and Score[1]<2000):
         p.phase_1(count)
-    else:
+    elif(Score[0]>=2000 and Score[0]<3000 or Score[1]>=2000 and Score[1]<3000):
         p.phase_2(count)
-
+    elif (Score[0]>=3000 and dovrsen_powerup == 0 or Score[1]>=3000 and dovrsen_powerup == 0):
+        p.phase_2_1(count)
+    elif (dovrsen_powerup == 1):
+        p.phase_3(count)
 
 class Message_to_screen():
 
@@ -204,6 +314,7 @@ class Letjelica(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
         self.health = health
+        self.chosen_powerup = -1
 
         self.width = 49
         self.height = 55
@@ -394,15 +505,12 @@ def GameOver(score):
     pygame.quit()
     quit()
 
-
 def AnimateLetjelica(count, letjelica, letjelica_frame):
-
     if count % (fps/2) == 0:    
         letjelica_frame += 1   
         if letjelica_frame > 2:
             letjelica_frame  = 0 
         return LetjeliceAnimacija[letjelica_frame], letjelica_frame
-        
 
     return letjelica.image, letjelica_frame  
 
@@ -414,6 +522,7 @@ def PlayerOneGameLoop():
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica(pygame.image.load('Letjelice/letjelica_0.png'), width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
+    players.add(letjelica)
     Score.append(0) # Score[0]=0
     Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
     p = Phases(count)
