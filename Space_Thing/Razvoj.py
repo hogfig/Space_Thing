@@ -651,7 +651,7 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         if pressed[pygame.K_d]:
             letjelica2.speedx += 5 
 
-        LoadAsteroidi(count) #Nacrtaj asteroide na ekran
+        init_Phases(count)
 
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
