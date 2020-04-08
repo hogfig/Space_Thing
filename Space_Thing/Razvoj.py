@@ -30,26 +30,70 @@ Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = [] # lista za pracenje rezultata
+Score = [3000] # lista za pracenje rezultata
 Socore_player2 = [] #lista za pracenje rezultata drugog igraca
 
 #LISTE ZA ANIMACIJU
 LetjeliceAnimacija = [pygame.image.load('Letjelice/letjelica_0.png'),pygame.image.load('Letjelice/letjelica_1.png'),pygame.image.load('Letjelice/letjelica_2.png')]
+#slike powerup kutija
 PowerUpAnimacija = [pygame.image.load('Animacije/red_box_0.png'),pygame.image.load('Animacije/red_box_1.png'),pygame.image.load('Animacije/green_box_0.png'),pygame.image.load('Animacije/green_box_1.png'),
                     pygame.image.load('Animacije/blue_box_0.png'),pygame.image.load('Animacije/blue_box_1.png'),pygame.image.load('Animacije/purple_box_0.png'),pygame.image.load('Animacije/purple_box_1.png')]
+BulletZeleni = [pygame.image.load('Bullets/bullet_snake0.png'),pygame.image.load('Bullets/bullet_snake1.png'),pygame.image.load('Bullets/bullet_snake2.png')]
+BulletPlavi = [pygame.image.load('Bullets/bullet_greenbox_0_0.png'),pygame.image.load('Bullets/bullet_greenbox_0_1.png')]
+
 #RAZNI INDEXI
 index = [0]
-counter = 0
-unutarnji_brojac_powerup = 0
-dovrsen_powerup = 0
+index_zeleni = 0
+index_plavi = 0
+counter = 2000
+unutarnji_brojac_powerup = 0 #brojac koji koristim u funkciji za inicijalizaciju objekta Powerup, tako da jednom udje u funkciju kad treba i stvori objekte
+dovrsen_powerup = 0 # kontrolana varijabla s kojom pratim da li je letjelica uzela powerup, a kada letjelica uzme powerup kreni na sljedecu fazu
 
 #INICIJALIZACIJA SPRITEOVA
 all_sprites = pygame.sprite.Group()
-players = pygame.sprite.Group()
+players = pygame.sprite.Group() 
 hearts = pygame.sprite.Group()
 asteroids = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 power_ups = pygame.sprite.Group()
+
+##_________________________________________________________________ KLASE __________________________________________________________________________
+
+#Klasa za mehaniku letjelice i metaka
+class Letjelica(pygame.sprite.Sprite):
+    def __init__(self, image, x, y, health):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+        self.health = health
+        self.chosen_powerup = -1
+
+        self.width = 49
+        self.height = 55
+        self.speedx = 0
+        self.speedy = 0
+        self.shoot_delay = 100
+        self.last_shot = pygame.time.get_ticks()
+
+    
+
+    def update(self):
+        if self.health > 0:
+            self.rect.x += self.speedx
+            self.rect.y += self.speedy
+        self.speedx = 0
+        self.speedy = 0
+
+    
+    def shoot(self, player = 'player1'):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot > self.shoot_delay:
+            self.last_shot = current_time
+            bullet = Bullet(self.rect.centerx, self.rect.top, player)
+            all_sprites.add(bullet)
+            bullets.add(bullet)
+
 
 class PowerUps(pygame.sprite.Sprite):
     def __init__(self,img,chosen_box,x,y):
@@ -70,32 +114,38 @@ class PowerUps(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, player):
         super().__init__()
+        #ima image ovisno o odabranom powerupu
         if players.sprites()[0].chosen_powerup == -1:
             self.image = pygame.image.load('Bullets/bullet.png')
             self.dmg = 1
+            self.speedy = -15
         elif players.sprites()[0].chosen_powerup == 0:
             self.image = pygame.image.load('Bullets/bullet_tower.png')
             self.dmg = 5
+            self.speedy = -15
         elif players.sprites()[0].chosen_powerup == 1:
              self.image = pygame.image.load('Bullets/bullet_snake0.png')
              self.dmg = 2
+             self.speedy = -10
         elif players.sprites()[0].chosen_powerup == 2:
             self.image = pygame.image.load('Bullets/bullet_greenbox_0_0.png')
             self.dmg = 3
+            self.speedy = -15
         elif players.sprites()[0].chosen_powerup == 3:
             self.image = pygame.image.load('Bullets/bullet_purple_box.png')
             self.dmg = 3
+            self.speedy = -15
 
         self.rect = self.image.get_rect()
         # bullet position is according the player position
         self.rect.centerx = x
         self.rect.bottom = y
-        self.speedy = -15
+        
         self.player = player
  
     def update(self):
         self.rect.y += self.speedy
- 
+
         # if bullet goes off top of window, destroy it
         if self.rect.bottom < 0:
             self.kill()
@@ -111,6 +161,7 @@ class Heart(pygame.sprite.Sprite):
         self.rect.y += 2
         if self.rect.top > height:
             self.kill()
+
 
 class Asteroid(pygame.sprite.Sprite):
     def __init__(self, image, health, size):
@@ -145,6 +196,7 @@ class Asteroid(pygame.sprite.Sprite):
                 heart = Heart('Animacije/HeartPowerUp.png', self.rect[0], self.rect[1])
                 all_sprites.add(heart)
                 hearts.add(heart)
+
 
 class Phases():
     def __init__(self,count):
@@ -239,6 +291,26 @@ class Phases():
             self.LoadAsteroidi(count)
 
 
+class Message_to_screen():
+
+    def __init__(self, font, color, position, msg):
+        self.font = font
+        self.color = color
+        self.position = position
+        self.msg = msg
+        self.rect = 0
+        
+    def Display(self):
+       text = self.font.render(self.msg, True, self.color)
+       self.rect = text.get_rect()
+       position = self.rect
+       position.center = (self.position[0], self.position[1])
+       screen.blit(text,position)
+
+
+## _____________________________________________________________FUNKCIJE_________________________________________________________________________
+
+
 def init_PowerUps():
     global unutarnji_brojac_powerup
 
@@ -252,6 +324,32 @@ def init_PowerUps():
         power_ups.add(crvena_kutija,zelena_kutija,plava_kutija,ljubicasta_kutija)
         unutarnji_brojac_powerup +=1
 
+def init_Phases(count,p):
+    global dovrsen_powerup 
+    if(Score[0] < 1000 and Score[1]<1000):
+        p.phase_0(count)
+    elif(Score[0]>=1000 and Score[0]<2000 or Score[1]>=1000 and Score[1]<2000):
+        p.phase_1(count)
+    elif(Score[0]>=2000 and Score[0]<3000 or Score[1]>=2000 and Score[1]<3000):
+        p.phase_2(count)
+    elif (Score[0]>=3000 and dovrsen_powerup == 0 or Score[1]>=3000 and dovrsen_powerup == 0):
+        p.phase_2_1(count)
+    elif (dovrsen_powerup == 1):
+        p.phase_3(count)
+
+
+def init_Stars():
+    for i in range(0, 49): 
+        x = random.randrange(0, width)
+        y = random.randrange(0, height)
+        Stars.append([x,y])
+
+
+def init_Meteori():
+    for m in range(meteor_num):          # dodjeljujes random koordinate za meteore i spremas ih u array  
+        x = random.randrange(0, width)
+        y = random.randrange(0, height)
+        Meteors.append([x,y])
 
 
 def  AnimatePowerUps(count):
@@ -277,88 +375,48 @@ def  AnimatePowerUps(count):
             if i.chosen_box == 3:
                 i.image = PowerUpAnimacija[7] #ljubicasta
 
-def init_Phases(count,p):
-    global dovrsen_powerup 
-    if(Score[0] < 1000 and Score[1]<1000):
-        p.phase_0(count)
-    elif(Score[0]>=1000 and Score[0]<2000 or Score[1]>=1000 and Score[1]<2000):
-        p.phase_1(count)
-    elif(Score[0]>=2000 and Score[0]<3000 or Score[1]>=2000 and Score[1]<3000):
-        p.phase_2(count)
-    elif (Score[0]>=3000 and dovrsen_powerup == 0 or Score[1]>=3000 and dovrsen_powerup == 0):
-        p.phase_2_1(count)
-    elif (dovrsen_powerup == 1):
-        p.phase_3(count)
 
-class Message_to_screen():
+def AnimateBullet(count):
 
-    def __init__(self, font, color, position, msg):
-        self.font = font
-        self.color = color
-        self.position = position
-        self.msg = msg
-        self.rect = 0
-        
-    def Display(self):
-       text = self.font.render(self.msg, True, self.color)
-       self.rect = text.get_rect()
-       position = self.rect
-       position.center = (self.position[0], self.position[1])
-       screen.blit(text,position)
-       
-#Klasa za mehaniku letjelice i metaka
-class Letjelica(pygame.sprite.Sprite):
-    def __init__(self, image, x, y, health):
-        super().__init__()
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.center = (x,y)
-        self.health = health
-        self.chosen_powerup = -1
+    if(players.sprites()[0].chosen_powerup >= 0 ):
+        global index_plavi, index_zeleni
 
-        self.width = 49
-        self.height = 55
-        self.speedx = 0
-        self.speedy = 0
-        self.shoot_delay = 100
-        self.last_shot = pygame.time.get_ticks()
+        size_zeleni = len(BulletZeleni) - 1
+        size_plavi = len(BulletPlavi) - 1
+        for i in bullets.sprites():
+            if players.sprites()[0].chosen_powerup == 1:
+                if(count%(fps/10) == 0):
+                    index_zeleni += 1
+                    if(index_zeleni>size_zeleni):
+                        index_zeleni = 0
+                    i.image = BulletZeleni[index_zeleni]
+                    
+            if players.sprites()[0].chosen_powerup == 2:
+                if(count%(fps/30) == 0):
+                    index_plavi += 1
+                    if(index_plavi>size_plavi):
+                        index_plavi = 0
+                    i.image = BulletPlavi[index_plavi]
+                    
 
-    
 
-    def update(self):
-        if self.health > 0:
-            self.rect.x += self.speedx
-            self.rect.y += self.speedy
-        self.speedx = 0
-        self.speedy = 0
+def AnimateLetjelica(count, letjelica, letjelica_frame):
+    if count % (fps/2) == 0:    
+        letjelica_frame += 1   
+        if letjelica_frame > 2:
+            letjelica_frame  = 0 
+        return LetjeliceAnimacija[letjelica_frame], letjelica_frame
 
-    
-    def shoot(self, player = 'player1'):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot > self.shoot_delay:
-            self.last_shot = current_time
-            bullet = Bullet(self.rect.centerx, self.rect.top, player)
-            all_sprites.add(bullet)
-            bullets.add(bullet)
+    return letjelica.image, letjelica_frame  
 
-                
-def init_Stars():
-    for i in range(0, 49): 
-        x = random.randrange(0, width)
-        y = random.randrange(0, height)
-        Stars.append([x,y])
-
-def init_Meteori():
-    for m in range(meteor_num):          # dodjeljujes random koordinate za meteore i spremas ih u array  
-        x = random.randrange(0, width)
-        y = random.randrange(0, height)
-        Meteors.append([x,y])
 
 def UpdateScore(num):
     Score[0] += num
 
+    
 def UpdateScore2(num):
     Score[1] += num
+
 
 def DisplayLife(count, HP, Srce_gore, Srce_dolje, x_kord,y):
     offset = 20
@@ -459,6 +517,7 @@ def main_menu():
     pygame.quit()
     quit()
 
+
 def GameOver(score):
     game_over_running = True
     pygame.mixer.music.load('Pjesme/SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
@@ -505,14 +564,6 @@ def GameOver(score):
     pygame.quit()
     quit()
 
-def AnimateLetjelica(count, letjelica, letjelica_frame):
-    if count % (fps/2) == 0:    
-        letjelica_frame += 1   
-        if letjelica_frame > 2:
-            letjelica_frame  = 0 
-        return LetjeliceAnimacija[letjelica_frame], letjelica_frame
-
-    return letjelica.image, letjelica_frame  
 
 def PlayerOneGameLoop():
     game_running = True
@@ -582,6 +633,8 @@ def PlayerOneGameLoop():
 
         letjelica.image , letjelica_frame = AnimateLetjelica(count, letjelica, letjelica_frame)
         
+        AnimateBullet(count)
+        
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
 
@@ -613,10 +666,11 @@ def PlayerOneGameLoop():
         
         clock.tick(fps)
         count += 1
-        
+
     pygame.quit()
     quit()
-    
+
+
 def GameOver2(score1, score2):
     game_over_running = True
     pygame.mixer.music.load('Pjesme/SpaceThingMain_menu_theme.mp3') #Path do pjesme u folderu
@@ -663,7 +717,6 @@ def GameOver2(score1, score2):
                 PlayerTwoGameLoop()
     pygame.quit()
     quit()
-
 
 
 def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
