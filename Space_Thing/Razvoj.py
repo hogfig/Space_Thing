@@ -88,11 +88,19 @@ class Letjelica(pygame.sprite.Sprite):
     
     def shoot(self, player = 'player1'):
         current_time = pygame.time.get_ticks()
+        offset = 5
         if current_time - self.last_shot > self.shoot_delay:
             self.last_shot = current_time
             bullet = Bullet(self.rect.centerx, self.rect.top, player)
             all_sprites.add(bullet)
             bullets.add(bullet)
+            if players.sprites()[0].chosen_powerup == 0:
+                    bullet1 = Bullet((bullets.sprites()[-1].rect.center[0] + offset), (bullets.sprites()[-1].rect.center[1]) , 'player1')
+                    bullets.sprites()[-1].rect.centerx = bullets.sprites()[-1].rect.centerx - offset
+                    bullet.rect.bottom = bullet1.rect.bottom
+                    bullets.add(bullet1)  
+                    all_sprites.add(bullet1) 
+            
 
 
 class PowerUps(pygame.sprite.Sprite):
@@ -121,7 +129,7 @@ class Bullet(pygame.sprite.Sprite):
             self.speedy = -15
         elif players.sprites()[0].chosen_powerup == 0:
             self.image = pygame.image.load('Bullets/bullet_tower.png')
-            self.dmg = 5
+            self.dmg = 2
             self.speedy = -15
         elif players.sprites()[0].chosen_powerup == 1:
              self.image = pygame.image.load('Bullets/bullet_snake0.png')
@@ -380,10 +388,12 @@ def AnimateBullet(count):
 
     if(players.sprites()[0].chosen_powerup >= 0 ):
         global index_plavi, index_zeleni
-
+        
+        offset = 10
         size_zeleni = len(BulletZeleni) - 1
         size_plavi = len(BulletPlavi) - 1
-        for i in bullets.sprites():
+
+        for i in bullets.sprites():                
             if players.sprites()[0].chosen_powerup == 1:
                 if(count%(fps/10) == 0):
                     index_zeleni += 1
