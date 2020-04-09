@@ -30,8 +30,10 @@ Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = [3000] # lista za pracenje rezultata
+Score = [] # lista za pracenje rezultata
 Socore_player2 = [] #lista za pracenje rezultata drugog igraca
+
+
 
 #LISTE ZA ANIMACIJU
 LetjeliceAnimacija = [pygame.image.load('Letjelice/letjelica_0.png'),pygame.image.load('Letjelice/letjelica_1.png'),pygame.image.load('Letjelice/letjelica_2.png')]
@@ -43,19 +45,25 @@ BulletPlavi = [pygame.image.load('Bullets/bullet_greenbox_0_0.png'),pygame.image
 
 #RAZNI INDEXI
 index = [0]
+counter = 0
+unutarnji_brojac_powerup = 0
+dovrsen_powerup = 0
+done = False
+help = 865
 index_zeleni = 0
 index_plavi = 0
-counter = 2000
 unutarnji_brojac_powerup = 0 #brojac koji koristim u funkciji za inicijalizaciju objekta Powerup, tako da jednom udje u funkciju kad treba i stvori objekte
 dovrsen_powerup = 0 # kontrolana varijabla s kojom pratim da li je letjelica uzela powerup, a kada letjelica uzme powerup kreni na sljedecu fazu
 
-#INICIJALIZACIJA SPRITEOVA
+#KREACIJA SPRITE GRUPA
 all_sprites = pygame.sprite.Group()
 players = pygame.sprite.Group() 
 hearts = pygame.sprite.Group()
 asteroids = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 power_ups = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
 
 ##_________________________________________________________________ KLASE __________________________________________________________________________
 
@@ -119,6 +127,8 @@ class PowerUps(pygame.sprite.Sprite):
             self.rect.y += self.speed
 
 
+
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, player):
         super().__init__()
@@ -158,6 +168,54 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y = 0):
+        super().__init__()
+        self.image = pygame.image.load("Animacije/Enemies/enemy0_5.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+        self.health = 10
+        self.shoot_delay = 100
+        self.last_shot = pygame.time.get_ticks()
+
+
+    def update(self):
+        if(self.rect.y < height*0.1):
+            self.rect.y += 2
+        if(self.health < 1):
+            self.kill()
+
+    def shoot(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot > self.shoot_delay:
+            self.last_shot = current_time
+            bullet = EnemyBullet(self.rect.centerx, self.rect.bottom-5)
+            all_sprites.add(bullet)
+            enemy_bullets.add(bullet)
+
+
+class EnemyBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load('Bullets/bullet_purple_box.png')
+        self.rect = self.image.get_rect()
+        # bullet position is according the player position
+        self.rect.centerx = x
+        self.rect.bottom = y
+        self.speedy = -10
+
+ 
+    def update(self):
+        self.rect.y -= self.speedy
+ 
+        # if bullet goes off top of window, destroy it
+        if self.rect.bottom > height:
+            self.kill()
+
+
+
+
 class Heart(pygame.sprite.Sprite):
     def __init__(self,image, x,y):
         super().__init__()
@@ -188,6 +246,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.rect.y += self.speed
             if self.rect.top > height:
                 self.kill()
+
         else:
             self.kill() 
             if self.size == "small":
@@ -259,14 +318,14 @@ class Phases():
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 2')
             S.Display()     
             counter+=1
-        else:     
+        else:
             self.povecaj_mali = 20
-            self.povecaj_srednji = 60   
+            self.povecaj_srednji = 60
             self.LoadAsteroidi(count)
     
     def phase_2_1(self,count):
         global counter,dovrsen_powerup,unutarnji_brojac_powerup
-        if(counter <= 935):
+        if(counter <= 800):
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'CHOOSE  WISELY')
             S.Display()     
             counter+=1
@@ -285,18 +344,25 @@ class Phases():
                 power_ups.empty()
                 unutarnji_brojac_powerup +=1
                 dovrsen_powerup += 1
-                
-    
+
+
     def phase_3(self,count):
         global counter
+        global done
+        global help
         if(counter <= 1000):
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 3')
             S.Display()     
             counter+=1
-        else:     
-            self.povecaj_mali = 25
-            self.povecaj_srednji = 62   
-            self.LoadAsteroidi(count)
+        else:
+            if done == False:          #da se samo jednom izvrti for
+                for i in range(1,11):
+                    i = Enemy(help)
+                    enemies.add(i)
+                    all_sprites.add(i)
+                    help -= 90
+                done = True
+
 
 
 class Message_to_screen():
@@ -587,6 +653,8 @@ def PlayerOneGameLoop():
     Score.append(0) # Score[0]=0
     Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
     p = Phases(count)
+    for enemy in enemies:
+        enemy.kill()
     for asteroid in asteroids:
         asteroid.kill()
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
@@ -594,6 +662,8 @@ def PlayerOneGameLoop():
     pygame.mixer.music.set_volume(0.05)
     pygame.mixer.music.play(-1)
     letjelica_frame = 0
+    
+
     
 
     while game_running:
@@ -641,6 +711,7 @@ def PlayerOneGameLoop():
         
         init_Phases(count,p)
 
+
         letjelica.image , letjelica_frame = AnimateLetjelica(count, letjelica, letjelica_frame)
         
         AnimateBullet(count)
@@ -664,6 +735,16 @@ def PlayerOneGameLoop():
         pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
         for asteroid,pew in pewpew_Hits.items():
             asteroid.health -= pew[0].dmg
+
+        pewEnemy_Hits = pygame.sprite.groupcollide(enemies, bullets, False, pygame.sprite.collide_circle)        
+        for enemy,pew in pewEnemy_Hits.items():
+            enemy.health -= pew[0].dmg
+
+        for i in enemies:
+            if(i.rect.x == letjelica.rect.x):
+                i.shoot()
+            
+
             
         #FADE IN VOLUME
         if pygame.mixer.music.get_volume() < 0.4:
@@ -838,6 +919,7 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         if asteroidHits:
             pygame.mixer.Sound.play(crash_sound)
             letjelica1.health -= 1
+
         
         heartHits = pygame.sprite.spritecollide(letjelica2, hearts, True)
         if heartHits:
