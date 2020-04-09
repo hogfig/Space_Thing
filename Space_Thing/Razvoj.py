@@ -5,6 +5,7 @@ import random
 import time
 import shelve 
 
+# VARIJABLE VEZANE ZA SCREEN
 white=(255,255,255)
 orange = (255,162,0)
 black=(0,0,0)
@@ -12,15 +13,18 @@ size=width,height= 920,640
 screen=pygame.display.set_mode(size)
 clock= pygame.time.Clock()
 fps= 60
+screen_rect = screen.get_rect()
+
+#CONSTANTE  
 meteor_speed = 5
 meteor_size = 1
 asteroid_speed = 3
 meteor_num = 200
-screen_rect = screen.get_rect()
+
+#VARIJABLE ZA EXTERNAL FILES
 d  = shelve.open('SaveFiles/highscore.txt')
 
-
-
+#LISTE ZA MEHANIKU IGRE
 asteroid_images  = []    #slike razlicitih asteroida, random se bira jedna kad se kreira asteroid
 Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
@@ -28,18 +32,68 @@ Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
 Score = [] # lista za pracenje rezultata
 Socore_player2 = [] #lista za pracenje rezultata drugog igraca
-LetjeliceAnimacija = [pygame.image.load('Letjelice/letjelica_0.png'),pygame.image.load('Letjelice/letjelica_1.png'),pygame.image.load('Letjelice/letjelica_2.png')]
-index = [0]
 
+
+
+#LISTE ZA ANIMACIJU
+LetjeliceAnimacija = [pygame.image.load('Letjelice/letjelica_0.png'),pygame.image.load('Letjelice/letjelica_1.png'),pygame.image.load('Letjelice/letjelica_2.png')]
+PowerUpAnimacija = [pygame.image.load('Animacije/red_box_0.png'),pygame.image.load('Animacije/red_box_1.png'),pygame.image.load('Animacije/green_box_0.png'),pygame.image.load('Animacije/green_box_1.png'),
+                    pygame.image.load('Animacije/blue_box_0.png'),pygame.image.load('Animacije/blue_box_1.png'),pygame.image.load('Animacije/purple_box_0.png'),pygame.image.load('Animacije/purple_box_1.png')]
+#RAZNI INDEXI
+index = [0]
+counter = 0
+unutarnji_brojac_powerup = 0
+dovrsen_powerup = 0
+done = False
+help = 865
+
+#KREACIJA SPRITE GRUPA
 all_sprites = pygame.sprite.Group()
+players = pygame.sprite.Group()
 hearts = pygame.sprite.Group()
 asteroids = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
+power_ups = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
+
+class PowerUps(pygame.sprite.Sprite):
+    def __init__(self,img,chosen_box,x,y):
+        super().__init__()
+        self.image = img
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = 2
+        self.chosen_box = chosen_box #sluzi za indentifikaciju boje kutije koja je odabrana
+    
+    def update(self):
+        global height
+        if self.rect.y < height/2:
+            self.rect.y += self.speed
+
+
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, player):
         super().__init__()
-        self.image = pygame.image.load('Bullets/bullet.png')
+        if players.sprites()[0].chosen_powerup == -1:
+            self.image = pygame.image.load('Bullets/bullet.png')
+            self.dmg = 1
+        elif players.sprites()[0].chosen_powerup == 0:
+            self.image = pygame.image.load('Bullets/bullet_tower.png')
+            self.dmg = 5
+        elif players.sprites()[0].chosen_powerup == 1:
+             self.image = pygame.image.load('Bullets/bullet_snake0.png')
+             self.dmg = 2
+        elif players.sprites()[0].chosen_powerup == 2:
+            self.image = pygame.image.load('Bullets/bullet_greenbox_0_0.png')
+            self.dmg = 3
+        elif players.sprites()[0].chosen_powerup == 3:
+            self.image = pygame.image.load('Bullets/bullet_purple_box.png')
+            self.dmg = 3
+
         self.rect = self.image.get_rect()
         # bullet position is according the player position
         self.rect.centerx = x
@@ -54,6 +108,55 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y = 0):
+        super().__init__()
+        self.image = pygame.image.load("Animacije/Enemies/enemy0_5.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+        self.health = 10
+        self.shoot_delay = 100
+        self.last_shot = pygame.time.get_ticks()
+
+
+    def update(self):
+        if(self.rect.y < height*0.1):
+            self.rect.y += 2
+        if(self.health < 1):
+            self.kill()
+            print("dead")
+
+    def shoot(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot > self.shoot_delay:
+            self.last_shot = current_time
+            bullet = EnemyBullet(self.rect.centerx, self.rect.bottom-5)
+            all_sprites.add(bullet)
+            enemy_bullets.add(bullet)
+
+
+class EnemyBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load('Bullets/bullet_purple_box.png')
+        self.rect = self.image.get_rect()
+        # bullet position is according the player position
+        self.rect.centerx = x
+        self.rect.bottom = y
+        self.speedy = -10
+
+ 
+    def update(self):
+        self.rect.y -= self.speedy
+ 
+        # if bullet goes off top of window, destroy it
+        if self.rect.bottom > height:
+            self.kill()
+
+
+
+
 class Heart(pygame.sprite.Sprite):
     def __init__(self,image, x,y):
         super().__init__()
@@ -62,7 +165,7 @@ class Heart(pygame.sprite.Sprite):
         self.rect.center = (x,y)
     
     def update(self):             #srce pada i ako izade iz ekrana se obrise
-        self.rect.y += 1.7
+        self.rect.y += 2
         if self.rect.top > height:
             self.kill()
 
@@ -83,6 +186,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.rect.y += self.speed
             if self.rect.top > height:
                 self.kill()
+
         else:
             self.kill() 
             if self.size == "small":
@@ -100,7 +204,6 @@ class Asteroid(pygame.sprite.Sprite):
                 all_sprites.add(heart)
                 hearts.add(heart)
 
-counter = 0
 class Phases():
     def __init__(self,count):
         self.povecaj_mali = 1
@@ -154,23 +257,103 @@ class Phases():
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 2')
             S.Display()     
             counter+=1
-        else:     
+        else:
             self.povecaj_mali = 20
-            self.povecaj_srednji = 60   
+            self.povecaj_srednji = 60
             self.LoadAsteroidi(count)
-        
-def init_Phases(count):
     
-    if(Score[0] < 1000):
-        p=Phases(count)
-        p.phase_0(count)
-    elif(Score[0]>=1000 and Score[0]<2000):
-        p1=Phases(count)
-        p1.phase_1(count)
-    else:
-        p2=Phases(count)
-        p2.phase_2(count)
+    def phase_2_1(self,count):
+        global counter,dovrsen_powerup,unutarnji_brojac_powerup
+        if(counter <= 500):
+            S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'CHOOSE  WISELY')
+            S.Display()     
+            counter+=1
+        else:    
+            init_PowerUps()
 
+            #animiraj kutije
+            AnimatePowerUps(count)
+
+            #provjeri ako se desava kolizija izmedu letjelice i powerups
+            check_collide = pygame.sprite.groupcollide(players,power_ups,False,True)      
+            if check_collide:
+                for letjelica, power_up in check_collide.items():                     
+                    letjelica.chosen_powerup = power_up[0].chosen_box
+                all_sprites.remove(power_ups)
+                power_ups.empty()
+                unutarnji_brojac_powerup +=1
+                dovrsen_powerup += 1
+
+
+    def phase_3(self,count):
+        global counter
+        global done
+        global help
+        if(counter <= 1000):
+            S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 3')
+            S.Display()     
+            counter+=1
+        else:
+            if done == False:          #da se samo jednom izvrti for
+                for i in range(1,11):
+                    i = Enemy(help)
+                    enemies.add(i)
+                    all_sprites.add(i)
+                    help -= 90
+                done = True
+
+
+
+def init_PowerUps():
+    global unutarnji_brojac_powerup
+
+    if unutarnji_brojac_powerup<1 :
+        crvena_kutija = PowerUps(PowerUpAnimacija[0],0,300,0)
+        zelena_kutija = PowerUps(PowerUpAnimacija[2],1,400,0)
+        plava_kutija = PowerUps(PowerUpAnimacija[4],2,500,0)
+        ljubicasta_kutija = PowerUps(PowerUpAnimacija[6],3,600,0)
+
+        all_sprites.add(crvena_kutija,zelena_kutija,plava_kutija,ljubicasta_kutija)
+        power_ups.add(crvena_kutija,zelena_kutija,plava_kutija,ljubicasta_kutija)
+        unutarnji_brojac_powerup +=1
+
+
+
+def  AnimatePowerUps(count):
+    #svake pola sekunde se izmjenjuje frame, frameovi su pohranjeni u listi PowerUpAnimacije, a objekti (svaka kutija) se dohvaca pomocu
+    #grupa spriteova
+    for i in power_ups.sprites():
+        if count%(fps) < 30:
+            if i.chosen_box == 0:
+                i.image = PowerUpAnimacija[1]  #crvena
+            if i.chosen_box == 1:
+                i.image = PowerUpAnimacija[2] #zelena
+            if i.chosen_box == 2:
+                i.image = PowerUpAnimacija[4] #plava
+            if i.chosen_box == 3:
+                i.image = PowerUpAnimacija[6] #ljubicasta
+        else:
+            if i.chosen_box == 0:
+                i.image = PowerUpAnimacija[0] #crvena
+            if i.chosen_box == 1:    
+                i.image = PowerUpAnimacija[3] #zelena
+            if i.chosen_box == 2:
+                i.image = PowerUpAnimacija[5] #plava
+            if i.chosen_box == 3:
+                i.image = PowerUpAnimacija[7] #ljubicasta
+
+def init_Phases(count,p):
+    global dovrsen_powerup 
+    if(Score[0] < 1000 and Score[1]<1000):
+        p.phase_0(count)
+    elif(Score[0]>=1000 and Score[0]<2000 or Score[1]>=1000 and Score[1]<2000):
+        p.phase_1(count)
+    elif(Score[0]>=2000 and Score[0]<3000 or Score[1]>=2000 and Score[1]<3000):
+        p.phase_2(count)
+    elif (Score[0]>=3000 and dovrsen_powerup == 0 or Score[1]>=3000 and dovrsen_powerup == 0):
+        p.phase_2_1(count)
+    elif (dovrsen_powerup == 1):
+        p.phase_3(count)
 
 class Message_to_screen():
 
@@ -196,6 +379,7 @@ class Letjelica(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
         self.health = health
+        self.chosen_powerup = -1
 
         self.width = 49
         self.height = 55
@@ -213,7 +397,6 @@ class Letjelica(pygame.sprite.Sprite):
         self.speedx = 0
         self.speedy = 0
 
-    
     
     def shoot(self, player = 'player1'):
         current_time = pygame.time.get_ticks()
@@ -387,15 +570,12 @@ def GameOver(score):
     pygame.quit()
     quit()
 
-
 def AnimateLetjelica(count, letjelica, letjelica_frame):
-
     if count % (fps/2) == 0:    
         letjelica_frame += 1   
         if letjelica_frame > 2:
             letjelica_frame  = 0 
         return LetjeliceAnimacija[letjelica_frame], letjelica_frame
-        
 
     return letjelica.image, letjelica_frame  
 
@@ -407,8 +587,12 @@ def PlayerOneGameLoop():
     #Objekt letjelica: position, img_path, promjena_poz_x, promjena_poz_x, broj zivota
     letjelica = Letjelica(pygame.image.load('Letjelice/letjelica_0.png'), width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
-    Score.append(0) 
-    Score[0] = 0
+    players.add(letjelica)
+    Score.append(2990) # Score[0]=0
+    Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
+    p = Phases(count)
+    for enemy in enemies:
+        enemy.kill()
     for asteroid in asteroids:
         asteroid.kill()
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
@@ -418,21 +602,20 @@ def PlayerOneGameLoop():
     letjelica_frame = 0
     
 
+    
+
     while game_running:
         screen.fill(black)
         S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [65, 20], 'SCORE    ' + str(Score[0]))
         S.Display() 
         DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje,width - 20, 10)
         
-        
-
         if letjelica.health == 0:
             letjelica.kill()
             if Score[0] > d['highscore']:     #saves the new score if its bigger than the all time high score
                 d['highscore'] = Score[0]
             pygame.mixer.music.stop()
             GameOver(Score[0])
-
 
         #Blok za crtanje background zvezda
         for i in Stars:
@@ -464,19 +647,16 @@ def PlayerOneGameLoop():
         if pressed[pygame.K_RIGHT]:
             letjelica.speedx += 5   
         
-        init_Phases(count)
+        init_Phases(count,p)
+
 
         letjelica.image , letjelica_frame = AnimateLetjelica(count, letjelica, letjelica_frame)
         
-
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
-        
 
         if count % 50 == 0:             #povecava score otprilike scaku sekundu za 10
             Score[0] += 10
-
-
 
         heartHits = pygame.sprite.spritecollide(letjelica, hearts, True)
         if heartHits:
@@ -487,20 +667,28 @@ def PlayerOneGameLoop():
             pygame.mixer.Sound.play(crash_sound)
             letjelica.health -= 1
 
-        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)
-        for hit in pewpew_Hits:
-            hit.health -= 1
+        
+        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
+        for asteroid,pew in pewpew_Hits.items():
+            asteroid.health -= pew[0].dmg
+
+        pewEnemy_Hits = pygame.sprite.groupcollide(enemies, bullets, False, pygame.sprite.collide_circle)        
+        for enemy,pew in pewEnemy_Hits.items():
+            enemy.health -= pew[0].dmg
+
+        for i in enemies:
+            if(i.rect.x == letjelica.rect.x):
+                i.shoot()
             
-        
-        
+
+            
         #FADE IN VOLUME
         if pygame.mixer.music.get_volume() < 0.4:
             value = pygame.mixer.music.get_volume() + 0.01  
             pygame.mixer.music.set_volume(value)
 
         letjelica.rect.clamp_ip(screen_rect)      #neda letjelici da izade iz ekrana                     
-        
-        
+              
         pygame.display.update()
         
         clock.tick(fps)
@@ -569,6 +757,9 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
     Score.append(0)
     Score[0] = 0
     Score[1] = 0
+
+    p = Phases(count) #instanca objekta koja je potrebna za razvoj levela (faza)
+
     crash_sound = pygame.mixer.Sound('Pjesme/Roblox_Death_Sound_Effect.ogg')
     pygame.mixer.music.load('Pjesme/Spacething_Level_1.mp3') #Path do pjesme u folderu
     pygame.mixer.music.set_volume(0.05)
@@ -651,7 +842,7 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         if pressed[pygame.K_d]:
             letjelica2.speedx += 5 
 
-        init_Phases(count)
+        init_Phases(count, p) #Nacrtaj asteroide na ekran tako da inicijaliziras faze
 
         all_sprites.update()            #updejta lokaciju svih spritova
         all_sprites.draw(screen)        #crta sve spritove na ekranu
@@ -664,6 +855,7 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         if asteroidHits:
             pygame.mixer.Sound.play(crash_sound)
             letjelica1.health -= 1
+
         
         heartHits = pygame.sprite.spritecollide(letjelica2, hearts, True)
         if heartHits:
@@ -679,9 +871,6 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
             asteroid.health -= 1
             asteroid.hit_by_player = bullet[0].player
         
-
-        
-
         letjelica1.rect.clamp_ip(screen_rect)
         letjelica2.rect.clamp_ip(screen_rect)  
 
