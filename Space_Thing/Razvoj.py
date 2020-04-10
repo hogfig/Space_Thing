@@ -45,7 +45,15 @@ counter = 0
 unutarnji_brojac_powerup = 0
 dovrsen_powerup = 0
 done = False
+<<<<<<< HEAD
 help = 0
+=======
+help = 865
+index_zeleni = 0
+index_plavi = 0
+unutarnji_brojac_powerup = 0 #brojac koji koristim u funkciji za inicijalizaciju objekta Powerup, tako da jednom udje u funkciju kad treba i stvori objekte
+dovrsen_powerup = 0 # kontrolana varijabla s kojom pratim da li je letjelica uzela powerup, a kada letjelica uzme powerup kreni na sljedecu fazu
+>>>>>>> 32951b9cdb321db20d66c7942a039f0a10054f39
 
 #KREACIJA SPRITE GRUPA
 all_sprites = pygame.sprite.Group()
@@ -57,6 +65,55 @@ power_ups = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 enemy_bullets = pygame.sprite.Group()
 
+<<<<<<< HEAD
+=======
+##_________________________________________________________________ KLASE __________________________________________________________________________
+
+#Klasa za mehaniku letjelice i metaka
+class Letjelica(pygame.sprite.Sprite):
+    def __init__(self, image, x, y, health):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+        self.health = health
+        self.chosen_powerup = -1
+
+        self.width = 49
+        self.height = 55
+        self.speedx = 0
+        self.speedy = 0
+        self.shoot_delay = 100
+        self.last_shot = pygame.time.get_ticks()
+
+    
+
+    def update(self):
+        if self.health > 0:
+            self.rect.x += self.speedx
+            self.rect.y += self.speedy
+        self.speedx = 0
+        self.speedy = 0
+
+    
+    def shoot(self, player = 'player1'):
+        current_time = pygame.time.get_ticks()
+        offset = 5
+        if current_time - self.last_shot > self.shoot_delay:
+            self.last_shot = current_time
+            bullet = Bullet(self.rect.centerx, self.rect.top, player)
+            all_sprites.add(bullet)
+            bullets.add(bullet)
+            if players.sprites()[0].chosen_powerup == 0:
+                    bullet1 = Bullet((bullets.sprites()[-1].rect.center[0] + offset), (bullets.sprites()[-1].rect.center[1]) , 'player1')
+                    bullets.sprites()[-1].rect.centerx = bullets.sprites()[-1].rect.centerx - offset
+                    bullet.rect.bottom = bullet1.rect.bottom
+                    bullets.add(bullet1)  
+                    all_sprites.add(bullet1) 
+            
+
+
+>>>>>>> 32951b9cdb321db20d66c7942a039f0a10054f39
 class PowerUps(pygame.sprite.Sprite):
     def __init__(self,img,chosen_box,x,y):
         super().__init__()
@@ -83,7 +140,12 @@ class Bullet(pygame.sprite.Sprite):
             self.dmg = 1
         elif players.sprites()[0].chosen_powerup == 0:
             self.image = pygame.image.load('Bullets/bullet_tower.png')
+<<<<<<< HEAD
             self.dmg = 5
+=======
+            self.dmg = 2
+            self.speedy = -15
+>>>>>>> 32951b9cdb321db20d66c7942a039f0a10054f39
         elif players.sprites()[0].chosen_powerup == 1:
              self.image = pygame.image.load('Bullets/bullet_snake0.png')
              self.dmg = 2
@@ -126,6 +188,7 @@ class Enemy(pygame.sprite.Sprite):
     def update(self):
         if(self.health < 1):
             self.kill()
+<<<<<<< HEAD
 
         if self.direction == "right":
             self.rect.x += 2
@@ -153,6 +216,8 @@ class Enemy(pygame.sprite.Sprite):
 
         
         
+=======
+>>>>>>> 32951b9cdb321db20d66c7942a039f0a10054f39
 
     def shoot(self):
         current_time = pygame.time.get_ticks()
@@ -291,7 +356,7 @@ class Phases():
     
     def phase_2_1(self,count):
         global counter,dovrsen_powerup,unutarnji_brojac_powerup
-        if(counter <= 500):
+        if(counter <= 800):
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'CHOOSE  WISELY')
             S.Display()     
             counter+=1
@@ -383,6 +448,7 @@ def init_Phases(count,p):
 
 class Message_to_screen():
 
+<<<<<<< HEAD
     def __init__(self, font, color, position, msg):
         self.font = font
         self.color = color
@@ -413,6 +479,30 @@ class Letjelica(pygame.sprite.Sprite):
         self.speedy = 0
         self.shoot_delay = 100
         self.last_shot = pygame.time.get_ticks()
+=======
+    if(players.sprites()[0].chosen_powerup >= 0 ):
+        global index_plavi, index_zeleni
+        
+        offset = 10
+        size_zeleni = len(BulletZeleni) - 1
+        size_plavi = len(BulletPlavi) - 1
+
+        for i in bullets.sprites():                
+            if players.sprites()[0].chosen_powerup == 1:
+                if(count%(fps/10) == 0):
+                    index_zeleni += 1
+                    if(index_zeleni>size_zeleni):
+                        index_zeleni = 0
+                    i.image = BulletZeleni[index_zeleni]
+                    
+            if players.sprites()[0].chosen_powerup == 2:
+                if(count%(fps/30) == 0):
+                    index_plavi += 1
+                    if(index_plavi>size_plavi):
+                        index_plavi = 0
+                    i.image = BulletPlavi[index_plavi]
+                    
+>>>>>>> 32951b9cdb321db20d66c7942a039f0a10054f39
 
     
 
@@ -614,7 +704,7 @@ def PlayerOneGameLoop():
     letjelica = Letjelica(pygame.image.load('Letjelice/letjelica_0.png'), width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
     players.add(letjelica)
-    Score.append(2990) # Score[0]=0
+    Score.append(0) # Score[0]=0
     Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
     p = Phases(count)
     for enemy in enemies:
