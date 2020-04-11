@@ -30,7 +30,7 @@ Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = [3000] # lista za pracenje rezultata
+Score = [] # lista za pracenje rezultata
 Socore_player2 = [] #lista za pracenje rezultata drugog igraca
 
 
@@ -45,7 +45,7 @@ BulletPlavi = [pygame.image.load('Bullets/bullet_greenbox_0_0.png'),pygame.image
 
 #RAZNI INDEXI
 index = [0]
-counter = 1000
+counter = 0
 unutarnji_brojac_powerup = 0
 dovrsen_powerup = 0
 done = False
