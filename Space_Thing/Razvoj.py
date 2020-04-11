@@ -49,7 +49,7 @@ counter = 0
 unutarnji_brojac_powerup = 0
 dovrsen_powerup = 0
 done = False
-help = 865
+help = 0
 index_zeleni = 0
 index_plavi = 0
 unutarnji_brojac_powerup = 0 #brojac koji koristim u funkciji za inicijalizaciju objekta Powerup, tako da jednom udje u funkciju kad treba i stvori objekte
@@ -178,13 +178,39 @@ class Enemy(pygame.sprite.Sprite):
         self.health = 10
         self.shoot_delay = 100
         self.last_shot = pygame.time.get_ticks()
+        self.direction = "right"
 
 
     def update(self):
-        if(self.rect.y < height*0.1):
-            self.rect.y += 2
         if(self.health < 1):
             self.kill()
+ 
+        if self.direction == "right":
+            self.rect.x += 2
+            if self.rect.x > width-100:
+                self.direction = "down"
+                self.down_counter = 0
+                self.last_direction = "right"
+        
+        if self.direction == "down":
+            self.rect.y += 2
+            self.down_counter += 1
+            if self.down_counter == 50:
+                if self .last_direction == "right":
+                    self.direction = "left"
+                else:
+                    self.direction = "right"
+        
+        if self.direction == "left":
+            self.rect.x -= 2
+            if self.rect.x < 50:
+                self.direction = "down"
+                self.down_counter = 0
+                self.last_direction = "left"
+
+
+        
+        
 
     def shoot(self):
         current_time = pygame.time.get_ticks()
@@ -212,7 +238,6 @@ class EnemyBullet(pygame.sprite.Sprite):
         # if bullet goes off top of window, destroy it
         if self.rect.bottom > height:
             self.kill()
-
 
 
 
@@ -348,20 +373,17 @@ class Phases():
 
     def phase_3(self,count):
         global counter
-        global done
         global help
         if(counter <= 1000):
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 3')
             S.Display()     
             counter+=1
         else:
-            if done == False:          #da se samo jednom izvrti for
-                for i in range(1,11):
-                    i = Enemy(help)
-                    enemies.add(i)
-                    all_sprites.add(i)
-                    help -= 90
-                done = True
+            if help < 10 and count%50 ==0:
+                enemy = Enemy(-50,50)   
+                all_sprites.add(enemy)
+                enemies.add(enemy)
+                help += 1
 
 
 
@@ -722,26 +744,42 @@ def PlayerOneGameLoop():
         if count % 50 == 0:             #povecava score otprilike scaku sekundu za 10
             Score[0] += 10
 
-        heartHits = pygame.sprite.spritecollide(letjelica, hearts, True)
-        if heartHits:
+        letjelica_heart_Hits = pygame.sprite.spritecollide(letjelica, hearts, True)
+        if letjelica_heart_Hits:
             letjelica.health += 1
 
-        asteroidHits = pygame.sprite.spritecollide(letjelica, asteroids, True)
-        if asteroidHits:
+        letjelica_asteroid_Hits = pygame.sprite.spritecollide(letjelica, asteroids, True)
+        if letjelica_asteroid_Hits:
             pygame.mixer.Sound.play(crash_sound)
             letjelica.health -= 1
 
         
-        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
-        for asteroid,pew in pewpew_Hits.items():
+        asteroid_bullets_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
+        for asteroid,pew in asteroid_bullets_Hits.items():
             asteroid.health -= pew[0].dmg
 
-        pewEnemy_Hits = pygame.sprite.groupcollide(enemies, bullets, False, pygame.sprite.collide_circle)        
-        for enemy,pew in pewEnemy_Hits.items():
+        enemies_bullets_Hits = pygame.sprite.groupcollide(enemies, bullets, False, pygame.sprite.collide_circle)        
+        for enemy,pew in enemies_bullets_Hits.items():
             enemy.health -= pew[0].dmg
 
-        for i in enemies:
+        enemy_bullet_letjelica_Hits = pygame.sprite.spritecollide(letjelica, enemy_bullets, True)
+        if enemy_bullet_letjelica_Hits:
+            letjelica.health -= 1
+        
+        letjelica_enemiesHits = pygame.sprite.spritecollide(letjelica, enemies, True)
+        if letjelica_enemiesHits:
+            letjelica.health = 0
+
+        for i in enemies:                           #ako je letjelica ispod enemyija enemy puca
             if(i.rect.x == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x-1 == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x-2 == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x+1 == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x+2 == letjelica.rect.x):
                 i.shoot()
             
 
@@ -934,6 +972,8 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         for asteroid, bullet in pewpew_Hits.items():
             asteroid.health -= 1
             asteroid.hit_by_player = bullet[0].player
+
+        
         
         letjelica1.rect.clamp_ip(screen_rect)
         letjelica2.rect.clamp_ip(screen_rect)  
