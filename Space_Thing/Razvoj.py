@@ -30,8 +30,8 @@ Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = [3000] # lista za pracenje rezultata
-Socore_player2 = [] #lista za pracenje rezultata drugog igraca
+Score = [] # lista za pracenje rezultata
+Score_player2 = [] #lista za pracenje rezultata drugog igraca
 
 
 
@@ -49,7 +49,7 @@ counter = 1000
 unutarnji_brojac_powerup = 0
 dovrsen_powerup = 0
 done = False
-help = 865
+help = 0
 index_zeleni = 0
 index_plavi = 0
 unutarnji_brojac_powerup = 0 #brojac koji koristim u funkciji za inicijalizaciju objekta Powerup, tako da jednom udje u funkciju kad treba i stvori objekte
@@ -182,8 +182,6 @@ class Enemy(pygame.sprite.Sprite):
 
 
     def update(self):
-        if(self.rect.y < height*0.1):
-            self.rect.y += 2
         if(self.health < 1):
             self.kill()
  
@@ -198,7 +196,7 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.y += 2
             self.down_counter += 1
             if self.down_counter == 50:
-                if self.last_direction == "right":
+                if self .last_direction == "right":
                     self.direction = "left"
                 else:
                     self.direction = "right"
@@ -243,7 +241,6 @@ class EnemyBullet(pygame.sprite.Sprite):
 
 
 
-
 class Heart(pygame.sprite.Sprite):
     def __init__(self,image, x,y):
         super().__init__()
@@ -279,7 +276,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.kill() 
             if self.size == "small":
                 if self.hit_by_player == 'player1':
-                    UpdateScore(10)
+                    UpdateScore(500)
                 else:
                     UpdateScore2(10)
             else:
@@ -376,20 +373,17 @@ class Phases():
 
     def phase_3(self,count):
         global counter
-        global done
         global help
         if(counter <= 1000):
             S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 3')
             S.Display()     
             counter+=1
         else:
-            if done == False:          #da se samo jednom izvrti for
-                for i in range(1,11):
-                    i = Enemy(help)
-                    enemies.add(i)
-                    all_sprites.add(i)
-                    help -= 90
-                done = True
+            if help < 10 and count%50 ==0:
+                enemy = Enemy(-50,50)   
+                all_sprites.add(enemy)
+                enemies.add(enemy)
+                help += 1
 
 
 
@@ -478,36 +472,6 @@ def  AnimatePowerUps(count):
                 i.image = PowerUpAnimacija[7] #ljubicasta
 
 
-    def __init__(self, font, color, position, msg):
-        self.font = font
-        self.color = color
-        self.position = position
-        self.msg = msg
-        self.rect = 0
-        
-    def Display(self):
-       text = self.font.render(self.msg, True, self.color)
-       self.rect = text.get_rect()
-       position = self.rect
-       position.center = (self.position[0], self.position[1])
-       screen.blit(text,position)
-       
-#Klasa za mehaniku letjelice i metaka
-class Letjelica(pygame.sprite.Sprite):
-    def __init__(self, image, x, y, health):
-        super().__init__()
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.center = (x,y)
-        self.health = health
-        self.chosen_powerup = -1
-
-        self.width = 49
-        self.height = 55
-        self.speedx = 0
-        self.speedy = 0
-        self.shoot_delay = 100
-        self.last_shot = pygame.time.get_ticks()
 def AnimateBullet(count):
 
     if(players.sprites()[0].chosen_powerup >= 0 ):
@@ -708,7 +672,7 @@ def PlayerOneGameLoop():
     letjelica = Letjelica(pygame.image.load('Letjelice/letjelica_0.png'), width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
     players.add(letjelica)
-    Score.append(2990) # Score[0]=0
+    Score.append(0) # Score[0]=0
     Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
     p = Phases(count)
     for enemy in enemies:
@@ -798,8 +762,16 @@ def PlayerOneGameLoop():
         for enemy,pew in pewEnemy_Hits.items():
             enemy.health -= pew[0].dmg
 
-        for i in enemies:
+        for i in enemies:                           #ako je letjelica ispod enemyija enemy puca
             if(i.rect.x == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x-1 == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x-2 == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x+1 == letjelica.rect.x):
+                i.shoot()
+            if(i.rect.x+2 == letjelica.rect.x):
                 i.shoot()
             
 
