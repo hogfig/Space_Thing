@@ -30,7 +30,7 @@ Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = [] # lista za pracenje rezultata
+Score = [3000] # lista za pracenje rezultata
 Score_player2 = [] #lista za pracenje rezultata drugog igraca
 
 
@@ -45,7 +45,7 @@ BulletPlavi = [pygame.image.load('Bullets/bullet_greenbox_0_0.png'),pygame.image
 
 #RAZNI INDEXI
 index = [0]
-counter = 1000
+counter = 0
 unutarnji_brojac_powerup = 0
 dovrsen_powerup = 0
 done = False
@@ -276,7 +276,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.kill() 
             if self.size == "small":
                 if self.hit_by_player == 'player1':
-                    UpdateScore(500)
+                    UpdateScore(10)
                 else:
                     UpdateScore2(10)
             else:
@@ -744,23 +744,31 @@ def PlayerOneGameLoop():
         if count % 50 == 0:             #povecava score otprilike scaku sekundu za 10
             Score[0] += 10
 
-        heartHits = pygame.sprite.spritecollide(letjelica, hearts, True)
-        if heartHits:
+        letjelica_heart_Hits = pygame.sprite.spritecollide(letjelica, hearts, True)
+        if letjelica_heart_Hits:
             letjelica.health += 1
 
-        asteroidHits = pygame.sprite.spritecollide(letjelica, asteroids, True)
-        if asteroidHits:
+        letjelica_asteroid_Hits = pygame.sprite.spritecollide(letjelica, asteroids, True)
+        if letjelica_asteroid_Hits:
             pygame.mixer.Sound.play(crash_sound)
             letjelica.health -= 1
 
         
-        pewpew_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
-        for asteroid,pew in pewpew_Hits.items():
+        asteroid_bullets_Hits = pygame.sprite.groupcollide(asteroids, bullets, False, pygame.sprite.collide_circle)        
+        for asteroid,pew in asteroid_bullets_Hits.items():
             asteroid.health -= pew[0].dmg
 
-        pewEnemy_Hits = pygame.sprite.groupcollide(enemies, bullets, False, pygame.sprite.collide_circle)        
-        for enemy,pew in pewEnemy_Hits.items():
+        enemies_bullets_Hits = pygame.sprite.groupcollide(enemies, bullets, False, pygame.sprite.collide_circle)        
+        for enemy,pew in enemies_bullets_Hits.items():
             enemy.health -= pew[0].dmg
+
+        enemy_bullet_letjelica_Hits = pygame.sprite.spritecollide(letjelica, enemy_bullets, True)
+        if enemy_bullet_letjelica_Hits:
+            letjelica.health -= 1
+        
+        letjelica_enemiesHits = pygame.sprite.spritecollide(letjelica, enemies, True)
+        if letjelica_enemiesHits:
+            letjelica.health = 0
 
         for i in enemies:                           #ako je letjelica ispod enemyija enemy puca
             if(i.rect.x == letjelica.rect.x):
@@ -964,6 +972,8 @@ def PlayerTwoGameLoop():   #ugl isto kao player1 ali za dva plejera
         for asteroid, bullet in pewpew_Hits.items():
             asteroid.health -= 1
             asteroid.hit_by_player = bullet[0].player
+
+        
         
         letjelica1.rect.clamp_ip(screen_rect)
         letjelica2.rect.clamp_ip(screen_rect)  
