@@ -198,7 +198,7 @@ class Enemy(pygame.sprite.Sprite):
 class EnemyBullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load('Bullets/bullet_purple_box.png')
+        self.image = pygame.image.load('Bullets/bullet_basic.png')
         self.rect = self.image.get_rect()
         # bullet position is according the player position
         self.rect.centerx = x
