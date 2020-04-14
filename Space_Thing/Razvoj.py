@@ -30,8 +30,8 @@ Meteors = [] # meteori u menu
 Pew_Pew = [] # metci
 Stars = [] #background stars u igri
 asteroidi = [] #meteori u igrici
-Score = [] # lista za pracenje rezultata
-Socore_player2 = [] #lista za pracenje rezultata drugog igraca
+Score = [0,0] # lista za pracenje rezultata
+
 
 
 
@@ -224,14 +224,15 @@ class Enemy(pygame.sprite.Sprite):
 class EnemyBullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load('Bullets/bullet_basic.png')
+        #self.image = pygame.image.load('Bullets/bullet_basic.png')
+        self.image = pygame.transform.scale(pygame.image.load('Bullets/bullet_basic.png'), (25, 25))    #malo sam povecao metke jer su prije bili premali
         self.rect = self.image.get_rect()
         # bullet position is according the player position
         self.rect.centerx = x
         self.rect.bottom = y
         self.speedy = -10
 
- 
+
     def update(self):
         self.rect.y -= self.speedy
  
@@ -318,7 +319,7 @@ class Phases():
     def phase_0(self,count):
         global counter
         if(counter <= 205):
-            S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'PHASE 0')
+            S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',40), (255,255,255), [width / 2, height / 2], 'GOOD LUCK!')
             S.Display() 
             counter+=1  
         else:     
@@ -672,8 +673,8 @@ def PlayerOneGameLoop():
     letjelica = Letjelica(pygame.image.load('Letjelice/letjelica_0.png'), width*0.5, height*0.90, 3)
     all_sprites.add(letjelica)
     players.add(letjelica)
-    Score.append(0) # Score[0]=0
-    Score.append(0) # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
+    Score[0] = 0 # Score[0]=0
+    Score[1] = 0 # Score[1]=0, potrebno jer se u funkciji init_Phases kontrolira i Score[1] kako bi radio i player2 mode 
     p = Phases(count)
     for enemy in enemies:
         enemy.kill()
@@ -690,7 +691,7 @@ def PlayerOneGameLoop():
 
     while game_running:
         screen.fill(black)
-        S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [65, 20], 'SCORE    ' + str(Score[0]))
+        S = Message_to_screen(pygame.font.Font('arcadeclassic/ARCADECLASSIC.TTF',25), (255,255,255), [80, 20], 'SCORE    ' + str(Score[0]))
         S.Display() 
         DisplayLife(count, letjelica.health, Srce_gore, Srce_dolje,width - 20, 10)
         
